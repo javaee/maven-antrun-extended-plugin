@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<project name="test1">
+
+    <target name="test">
+
+        <java failonerror="true" classname="Test" fork="true" newenvironment="true">
+            <classpath refid="classpath"/>
+        </java>
+
+    </target>
+
+</project>

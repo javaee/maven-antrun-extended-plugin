@@ -1,0 +1,82 @@
+<plugin>
+  <description>Runs ant scripts embedded in the POM</description>
+  <groupId>org.apache.maven.plugins</groupId>
+  <artifactId>maven-antrun-plugin</artifactId>
+  <version>1.1</version>
+  <goalPrefix>antrun</goalPrefix>
+  <isolatedRealm>false</isolatedRealm>
+  <inheritedByDefault>true</inheritedByDefault>
+  <mojos>
+    <mojo>
+      <goal>run</goal>
+      <description>Maven AntRun Mojo.
+
+This plugin provides the capability of calling ant tasks
+from a POM. It is encouraged to move the actual tasks to
+a separate build.xml file and call that file with an
+&amp;lt;ant/&amp;gt; task.</description>
+      <requiresDependencyResolution>test</requiresDependencyResolution>
+      <requiresDirectInvocation>false</requiresDirectInvocation>
+      <requiresProject>true</requiresProject>
+      <requiresReports>false</requiresReports>
+      <aggregator>false</aggregator>
+      <requiresOnline>false</requiresOnline>
+      <inheritedByDefault>true</inheritedByDefault>
+      <implementation>org.apache.maven.plugin.antrun.AntRunMojo</implementation>
+      <language>java</language>
+      <configurator>override</configurator>
+      <instantiationStrategy>per-lookup</instantiationStrategy>
+      <executionStrategy>once-per-session</executionStrategy>
+      <parameters>
+        <parameter>
+          <name>artifacts</name>
+          <type>java.util.List</type>
+          <required>true</required>
+          <editable>false</editable>
+          <description>The plugin dependencies.</description>
+        </parameter>
+        <parameter>
+          <name>project</name>
+          <type>org.apache.maven.project.MavenProject</type>
+          <required>true</required>
+          <editable>false</editable>
+          <description></description>
+        </parameter>
+        <parameter>
+          <name>sourceRoot</name>
+          <type>java.io.File</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>This folder is added to the list of those folders
+containing source to be compiled. Use this if your
+ant script generates source code.</description>
+        </parameter>
+        <parameter>
+          <name>tasks</name>
+          <type>org.apache.tools.ant.Target</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>The XML for the Ant task. You can add anything you can add
+between &amp;lt;target&gt; and &amp;lt;/target&gt; in a build.xml.</description>
+        </parameter>
+        <parameter>
+          <name>testSourceRoot</name>
+          <type>java.io.File</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>This folder is added to the list of those folders
+containing source to be compiled for testing. Use this if your
+ant script generates test source code.</description>
+        </parameter>
+      </parameters>
+      <configuration>
+        <project implementation="org.apache.maven.project.MavenProject">${project}</project>
+        <testSourceRoot implementation="java.io.File">${testSourceRoot}</testSourceRoot>
+        <tasks implementation="org.apache.tools.ant.Target">${tasks}</tasks>
+        <artifacts implementation="java.util.List">${plugin.artifacts}</artifacts>
+        <sourceRoot implementation="java.io.File">${sourceRoot}</sourceRoot>
+      </configuration>
+    </mojo>
+  </mojos>
+  <dependencies/>
+</plugin>
