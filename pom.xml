@@ -25,10 +25,6 @@
   <prerequisites>
     <maven>2.0.1</maven>
   </prerequisites>
-  <issueManagement>
-    <system>jira</system>
-    <url>http://jira.codehaus.org/browse/MANTRUN</url>
-  </issueManagement>
   <dependencies>
     <dependency>
       <groupId>org.apache.maven</groupId>
