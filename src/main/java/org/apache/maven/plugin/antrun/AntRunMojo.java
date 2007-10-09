@@ -1,7 +1,7 @@
 package org.apache.maven.plugin.antrun;
 
 /*
- * Copyright 2005 The Apache Software Foundation.
+ * Copyright 2005-2006 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,11 @@ package org.apache.maven.plugin.antrun;
  */
 
 import java.io.File;
+import java.util.Iterator;
+import java.util.List;
+import org.apache.maven.artifact.factory.ArtifactFactory;
+import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.artifact.resolver.ArtifactResolver;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
@@ -25,25 +30,26 @@ import org.apache.tools.ant.Target;
 /**
  * Maven AntRun Mojo.
  *
- * This plugin provides the capability of calling ant tasks
- * from a POM. It is encouraged to move the actual tasks to
+ * This plugin provides the capability of calling Ant tasks
+ * from a POM by running the nested ant tasks inside the &lt;tasks/&gt;
+ * parameter. It is encouraged to move the actual tasks to
  * a separate build.xml file and call that file with an
  * &lt;ant/&gt; task.
  *
  * @author <a href="mailto:kenney@apache.org">Kenney Westerhof</a>
- *
+ * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
+ * @version $Id: AntRunMojo.java 557316 2007-07-18 16:29:17Z kenney $
  * @configurator override
- *
  * @goal run
- * 
- * @description Runs the nested ant tasks
- * 
  * @requiresDependencyResolution test
  */
+// TODO: phase package
 public class AntRunMojo
     extends AbstractAntMojo
 {
     /**
+     * The Maven project object
+     *
      * @parameter expression="${project}"
      * @required
      * @readonly
@@ -51,12 +57,22 @@ public class AntRunMojo
     private MavenProject project;
 
     /**
-     * The XML for the Ant task. You can add anything you can add 
-     * between &lt;target> and &lt;/target> in a build.xml.
+     * The plugin dependencies.
+     *
+     * @parameter expression="${plugin.artifacts}"
+     * @required
+     * @readonly
+     */
+    private List pluginArtifacts;
+
+    /**
+     * The XML for the Ant task. You can add anything you can add
+     * between &lt;target&gt; and &lt;/target&gt; in a build.xml.
+     *
      * @parameter expression="${tasks}"
      */
     private Target tasks;
-
+    
     /**
      * This folder is added to the list of those folders
      * containing source to be compiled. Use this if your
@@ -76,11 +92,45 @@ public class AntRunMojo
     private File testSourceRoot;
 
     /**
+     * Used for resolving artifacts
+     *
+     * @component
+     */
+    private ArtifactResolver resolver;
+
+    /**
+     * Factory for creating artifact objects
+     *
+     * @component
+     */
+    private ArtifactFactory factory;
+
+    /**
+     * The local repository where the artifacts are located
+     *
+     * @parameter expression="${localRepository}"
+     * @required
+     */
+    private ArtifactRepository localRepository;
+
+    /**
+     * The remote repositories where artifacts are located
+     *
+     * @parameter expression="${project.remoteArtifactRepositories}"
+     */
+    private List remoteRepositories;   
+    
+    
+    
+    /**
+     * @see org.apache.maven.plugin.Mojo#execute()
      */
     public void execute()
         throws MojoExecutionException
     {
-        executeTasks( tasks, project );
+        initArtifactResolverWrapper();
+
+        executeTasks( tasks, project, pluginArtifacts );
 
         if ( sourceRoot != null )
         {
@@ -93,6 +143,22 @@ public class AntRunMojo
             getLog().info( "Registering compile test source root " + testSourceRoot );
             project.addTestCompileSourceRoot( testSourceRoot.toString() );
         }
-
+    }
+    
+    /*
+     * This method is invoked to initialize the ArtifactResolverWrapper and 
+     * set it in ArtifactResolverWrapperThreadLocal.  This thread local class
+     * can be used by other classes, such as Ant tasks, to obtain the
+     * ArtifactResolverWrapper.
+     */
+    private void initArtifactResolverWrapper() {        
+        ArtifactResolverWrapper wrapper = ArtifactResolverWrapperThreadLocal.get();
+        if (wrapper == null) {
+            wrapper = ArtifactResolverWrapper.getInstance(resolver, 
+                                                          factory,
+                                                          localRepository,
+                                                          remoteRepositories);
+            ArtifactResolverWrapperThreadLocal.set(wrapper);
+        }
     }
 }

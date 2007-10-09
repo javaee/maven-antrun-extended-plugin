@@ -16,6 +16,13 @@ package org.apache.maven.plugin.antrun;
  * limitations under the License.
  */
 
+import java.io.File;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 import org.apache.tools.ant.PropertyHelper;
@@ -34,6 +41,7 @@ public class AntPropertyHelper
     private Log log;
     private ExpressionEvaluator exprEvaluator;
     private MavenProject mavenProject;
+    private Map artifactMap = new Hashtable();
 
     /**
      * @deprecated use the other constructor
@@ -46,13 +54,34 @@ public class AntPropertyHelper
         log = l;
     }
 
-    public AntPropertyHelper( ExpressionEvaluator exprEvaluator, Log l )
+    /**
+     * @param exprEvaluator
+     * @param artifacts
+     * @param l
+     */
+    public AntPropertyHelper( ExpressionEvaluator exprEvaluator, Set artifacts, Log l )
     {
         this.mavenProject = null;
         this.exprEvaluator = exprEvaluator;
         this.log = l;
+
+        for ( Iterator it = artifacts.iterator(); it.hasNext(); )
+        {
+            Artifact artifact = (Artifact) it.next();
+
+            String key = "maven.dependency." + artifact.getGroupId() + "." + artifact.getArtifactId() +
+                ( artifact.getClassifier() != null ? "." + artifact.getClassifier() : "" ) +
+                ( artifact.getType() != null ? "." + artifact.getType() : "" ) + ".path";
+
+            log.debug( "Storing: " + key + "=" + artifact.getFile().getPath() );
+
+            artifactMap.put( key, artifact.getFile().getPath() );
+        }
     }
 
+    /**
+     * @see org.apache.tools.ant.PropertyHelper#getPropertyHook(java.lang.String, java.lang.String, boolean)
+     */
     public synchronized Object getPropertyHook( String ns, String name, boolean user )
     {
         if ( log.isDebugEnabled() )
@@ -65,19 +94,30 @@ public class AntPropertyHelper
         {
             return getPropertyHook( ns, name, user, mavenProject );
         }
-        
+
+
         Object val = null;
-        try 
+
+        if ( name.startsWith( "maven.dependency." ) )
         {
-            val = exprEvaluator.evaluate( "${" + name + "}" );
+            val = (String) artifactMap.get( name );
         }
-        catch (ExpressionEvaluationException e) 
+
+        if ( val == null )
         {
-            if ( log.isErrorEnabled() )
+            try
             {
-                log.error("Failed to evaluate expression" , e);
+                val = exprEvaluator.evaluate( "${" + name + "}" );
+            }
+            catch (ExpressionEvaluationException e)
+            {
+                if ( log.isErrorEnabled() )
+                {
+                    log.error("Failed to evaluate expression" , e);
+                }
             }
         }
+
         if ( val == null )
         {
             val = super.getPropertyHook( ns, name, user );
@@ -104,7 +144,11 @@ public class AntPropertyHelper
         Object val = null;
         try
         {
-            if ( name.startsWith( "project." ) )
+            if ( name.startsWith( "maven.dependency." ) )
+            {
+                val = (String) artifactMap.get( name );
+            }
+            else if ( name.startsWith( "project." ) )
             {
                 val = ReflectionValueExtractor.evaluate(
                     name,
@@ -139,7 +183,11 @@ public class AntPropertyHelper
             }
         }
 
+        if ( val instanceof File )
+        {
+            val = ((File) val).getAbsoluteFile();
+        }
+
         return val;
     }
-
 }
