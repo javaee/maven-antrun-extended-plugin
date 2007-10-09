@@ -69,8 +69,18 @@ public class AntRunMojoTest
     public void testDefaultProject()
         throws Exception
     {
-        String result = invokeMaven( "antrun-default-test", new Properties() );
-        assertTrue( result.indexOf( "[echo] Hello World!" ) != -1 );
+        try {
+            String result = invokeMaven( "antrun-default-test", new Properties() );
+            assertTrue( result.indexOf( "[echo] Hello World!" ) != -1 );
+        } catch (LifecycleExecutionException ex) {
+            String message = ex.getMessage();
+            if (message.contains("'org.jvnet.maven-antrun-extended-plugin:maven-antrun-extended-plugin' not found in repository")) {
+                System.out.println("maven-antrun-extended-plugin missing from local repository. Run mvn install and retest");
+            }
+            else {
+                throw ex;
+            }
+        }
     }
 
     /**
@@ -81,14 +91,24 @@ public class AntRunMojoTest
     public void testTasksAttributesProject()
         throws Exception
     {
-        Properties properties = new Properties();
+        try {
+            Properties properties = new Properties();
 
-        String result = invokeMaven( "tasksattributes-test", properties );
-        assertTrue( result.indexOf( "[echo] To skip me" ) != -1 );
+            String result = invokeMaven( "tasksattributes-test", properties );
+            assertTrue( result.indexOf( "[echo] To skip me" ) != -1 );
 
-        properties.put( "maven.test.skip", "true" );
-        result = invokeMaven( "tasksattributes-test", properties );
-        assertTrue( result.indexOf( "[echo] To skip me" ) == -1 );
+            properties.put( "maven.test.skip", "true" );
+            result = invokeMaven( "tasksattributes-test", properties );
+            assertTrue( result.indexOf( "[echo] To skip me" ) == -1 );
+        } catch (LifecycleExecutionException ex) {
+            String message = ex.getMessage();
+            if (message.contains("'org.jvnet.maven-antrun-extended-plugin:maven-antrun-extended-plugin' not found in repository")) {
+                System.out.println("maven-antrun-extended-plugin missing from local repository. Run mvn install and retest");
+            }
+            else {
+                throw ex;
+            }
+        }
     }
 
     /**
@@ -127,7 +147,7 @@ public class AntRunMojoTest
         try
         {
             maven.execute( project,
-                           Arrays.asList( new String[] { "org.apache.maven.plugins:maven-antrun-extended-plugin:1.1:run" } ),
+                           Arrays.asList( new String[] { "org.jvnet.maven-antrun-extended-plugin:maven-antrun-extended-plugin:1.1:run" } ),
                            eventMonitor, new ConsoleDownloadMonitor(), properties, new File( PlexusTestCase
                                .getBasedir(), "/target/test/unit/" + testProject + "/" ) );
 
@@ -139,7 +159,7 @@ public class AntRunMojoTest
             maven.setLocalRepositoryDirectory(null);
             maven.start();
             maven.execute( project,
-                           Arrays.asList( new String[] { "org.apache.maven.plugins:maven-antrun-extended-plugin:1.1:run" } ),
+                           Arrays.asList( new String[] { "org.jvnet.maven-antrun-extended-plugin:maven-antrun-extended-plugin:1.1:run" } ),
                            eventMonitor, new ConsoleDownloadMonitor(), properties, new File( PlexusTestCase
                                .getBasedir(), "/target/test/unit/" + testProject + "/" ) );
             return outOS.toString();
