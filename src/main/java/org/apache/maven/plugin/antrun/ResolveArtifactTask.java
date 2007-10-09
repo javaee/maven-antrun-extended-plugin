@@ -37,7 +37,7 @@ public class ResolveArtifactTask extends Task {
     public void execute() throws BuildException {
         log("Log messages this way", Project.MSG_INFO);
 
-        ArtifactResolverWrapper w = ArtifactResolverWrapperThreadLocal.get();
+        ArtifactResolverWrapper w = ArtifactResolverWrapper.get();
 
         // TODO: do the resolution
         Artifact a = w.getFactory().createArtifactWithClassifier(groupId, artifactId, version, null, classifier);
