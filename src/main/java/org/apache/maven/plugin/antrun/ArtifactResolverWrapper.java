@@ -58,6 +58,8 @@ public class ArtifactResolverWrapper
     private List remoteRepositories;
 
     /**
+     * Creates a wrapper and associates that with the current thread.
+     *
      * @param resolver
      * @param factory
      * @param localRepository
@@ -70,6 +72,7 @@ public class ArtifactResolverWrapper
         this.factory = factory;
         this.localRepository = localRepository;
         this.remoteRepositories = remoteRepositories;
+        INSTANCES.set(this);
     }
 
     /**
@@ -153,5 +156,19 @@ public class ArtifactResolverWrapper
         {
             throw new IOException( "Unable to find artifact: " + groupId + ":" + artifactId + ":" + version );
         }
+    }
+
+
+    private static final ThreadLocal<ArtifactResolverWrapper> INSTANCES = new ThreadLocal<ArtifactResolverWrapper>();
+
+    public static ArtifactResolverWrapper get() {
+        return INSTANCES.get();
+    }
+
+    /**
+     * Releases the instance tied to the thread to avoid memory leak.
+     */
+    public static void reset() {
+        INSTANCES.set(null);
     }
 }

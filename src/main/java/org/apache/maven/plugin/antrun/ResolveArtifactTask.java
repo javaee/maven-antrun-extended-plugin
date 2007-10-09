@@ -41,6 +41,6 @@ public class ResolveArtifactTask extends Task {
 
         // TODO: do the resolution
         Artifact a = w.getFactory().createArtifactWithClassifier(groupId, artifactId, version, null, classifier);
-        w.getResolver().resolve(...);
+        w.getResolver().resolve();
     }
 }

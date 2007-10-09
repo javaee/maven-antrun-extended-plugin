@@ -130,7 +130,11 @@ public class AntRunMojo
     {
         initArtifactResolverWrapper();
 
-        executeTasks( tasks, project, pluginArtifacts );
+        try {
+            executeTasks( tasks, project, pluginArtifacts );
+        } finally {
+            ArtifactResolverWrapper.reset();
+        }
 
         if ( sourceRoot != null )
         {
@@ -152,13 +156,9 @@ public class AntRunMojo
      * ArtifactResolverWrapper.
      */
     private void initArtifactResolverWrapper() {        
-        ArtifactResolverWrapper wrapper = ArtifactResolverWrapperThreadLocal.get();
-        if (wrapper == null) {
-            wrapper = ArtifactResolverWrapper.getInstance(resolver, 
-                                                          factory,
-                                                          localRepository,
-                                                          remoteRepositories);
-            ArtifactResolverWrapperThreadLocal.set(wrapper);
-        }
+        ArtifactResolverWrapper.getInstance(resolver, 
+                                                      factory,
+                                                      localRepository,
+                                                      remoteRepositories);
     }
 }
