@@ -16,7 +16,7 @@ import org.apache.maven.artifact.Artifact;
  * @author Kohsuke Kawaguchi
  */
 public class ResolveArtifactTask extends Task {
-    private String groupId,artifactId,version,type,classifier;
+    private String groupId,artifactId,version,type="jar",classifier;
 
     public void setGroupId(String groupId) {
         this.groupId = groupId;
