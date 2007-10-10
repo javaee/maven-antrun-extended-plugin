@@ -16,7 +16,7 @@ import org.apache.maven.artifact.Artifact;
  * @author Kohsuke Kawaguchi
  */
 public class ResolveArtifactTask extends Task {
-    private String groupId,artifactId,version,classifier;
+    private String groupId,artifactId,version,type,classifier;
 
     public void setGroupId(String groupId) {
         this.groupId = groupId;
@@ -30,6 +30,10 @@ public class ResolveArtifactTask extends Task {
         this.version = version;
     }
 
+    public void setType(String type) {
+        this.type = type;
+    }
+
     public void setClassifier(String classifier) {
         this.classifier = classifier;
     }
@@ -38,7 +42,7 @@ public class ResolveArtifactTask extends Task {
         log("Starting execute", Project.MSG_DEBUG);
         try {
             ArtifactResolverWrapper w = ArtifactResolverWrapper.get();
-            Artifact a = w.getFactory().createArtifactWithClassifier(groupId, artifactId, version, null, classifier);
+            Artifact a = w.getFactory().createArtifactWithClassifier(groupId, artifactId, version, type, classifier);
             w.getResolver().resolve(a, w.getRemoteRepositories(), w.getLocalRepository());
         } catch (Throwable ex) {
             log("Problem resolving artifact: "+ex.getMessage(), Project.MSG_ERR);
