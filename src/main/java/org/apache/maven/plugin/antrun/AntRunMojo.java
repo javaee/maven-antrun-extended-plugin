@@ -41,7 +41,6 @@ import org.apache.tools.ant.Target;
  * @version $Id: AntRunMojo.java 557316 2007-07-18 16:29:17Z kenney $
  * @configurator override
  * @goal run
- * @phase package
  * @requiresDependencyResolution test
  */
 // TODO: phase package
