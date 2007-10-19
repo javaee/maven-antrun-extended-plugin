@@ -4,11 +4,11 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.maven.artifact.Artifact;
+import org.apache.tools.ant.taskdefs.Property;
 
 /**
  * Ant task that resolves an artifact through Maven.
  *
- * TODO: implement the actual resolution logic
  * TODO: support more convenient syntax
  * TODO: resolve dependency transitively.
  * 
@@ -16,8 +16,13 @@ import org.apache.maven.artifact.Artifact;
  * @author Kohsuke Kawaguchi
  */
 public class ResolveArtifactTask extends Task {
-    private String groupId,artifactId,version,type="jar",classifier;
 
+    private String property,groupId,artifactId,version,type="jar",classifier;
+
+    public void setProperty(String property) {
+        this.property = property;
+    }
+    
     public void setGroupId(String groupId) {
         this.groupId = groupId;
     }
@@ -44,6 +49,10 @@ public class ResolveArtifactTask extends Task {
             ArtifactResolverWrapper w = ArtifactResolverWrapper.get();
             Artifact a = w.getFactory().createArtifactWithClassifier(groupId, artifactId, version, type, classifier);
             w.getResolver().resolve(a, w.getRemoteRepositories(), w.getLocalRepository());
+            // Property attribute is optional. Check for null value
+            if (property != null) {                
+                getProject().setProperty(property, a.getFile().getAbsolutePath());
+            }
         } catch (Throwable ex) {
             log("Problem resolving artifact: "+ex.getMessage(), Project.MSG_ERR);
             throw new BuildException(ex);
