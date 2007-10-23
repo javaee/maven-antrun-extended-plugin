@@ -157,8 +157,9 @@ public class AntRunMojo
      */
     private void initArtifactResolverWrapper() {        
         ArtifactResolverWrapper.getInstance(resolver, 
-                                                      factory,
-                                                      localRepository,
-                                                      remoteRepositories);
+                                            factory,
+                                            localRepository,
+                                            remoteRepositories,
+                                            project);
     }
 }

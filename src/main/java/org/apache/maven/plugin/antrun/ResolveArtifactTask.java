@@ -67,7 +67,7 @@ public class ResolveArtifactTask extends Task {
         log("Starting execute", Project.MSG_DEBUG);
         try {
             ArtifactResolverWrapper w = ArtifactResolverWrapper.get();
-            Artifact a = w.getFactory().createArtifactWithClassifier(groupId, artifactId, version, type, classifier);
+            Artifact a = w.createArtifactWithClassifier(groupId, artifactId, version, type, classifier);
             w.getResolver().resolve(a, w.getRemoteRepositories(), w.getLocalRepository());
             // Property attribute is optional. Check for null value
             if (property != null) {                

@@ -21,6 +21,7 @@ package org.apache.maven.plugin.antrun;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
@@ -28,6 +29,7 @@ import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.artifact.resolver.ArtifactResolver;
+import org.apache.maven.project.MavenProject;
 
 /**
  * Wrapper object to resolve artifact.
@@ -57,6 +59,19 @@ public class ArtifactResolverWrapper
      */
     private List remoteRepositories;
 
+    /*
+     * The maven project
+     */
+    private MavenProject project;
+    
+    
+    /*
+     * The boolean flag that indicates whether or not to verify that the
+     * resolved artifact is contained in the pom.xml file. 
+     * Default is 'true'.
+     */
+    private boolean verifyArtifact = true;
+    
     /**
      * Creates a wrapper and associates that with the current thread.
      *
@@ -82,8 +97,11 @@ public class ArtifactResolverWrapper
      * @param remoteRepositories
      * @return an instance of ArtifactResolverWrapper
      */
-    public static ArtifactResolverWrapper getInstance( ArtifactResolver resolver, ArtifactFactory factory,
-                                                      ArtifactRepository localRepository, List remoteRepositories )
+    public static ArtifactResolverWrapper getInstance( ArtifactResolver resolver, 
+                                                       ArtifactFactory factory,
+                                                       ArtifactRepository localRepository, 
+                                                       List remoteRepositories,
+                                                       MavenProject project)
     {
         return new ArtifactResolverWrapper( resolver, factory, localRepository, remoteRepositories );
     }
@@ -128,6 +146,18 @@ public class ArtifactResolverWrapper
         this.resolver = resolver;
     }
 
+    protected void setProject(MavenProject project) {
+        this.project = project;
+    }
+    
+    public MavenProject getProject() {
+        return project;
+    }
+    
+    protected void setVerifyArtifact(String verifyArtifact) {
+        this.verifyArtifact = Boolean.parseBoolean(verifyArtifact);
+    }
+    
     /**
      * Return the artifact path in the local repository for an artifact defined by its <code>groupId</code>,
      * its <code>artifactId</code> and its <code>version</code>.
@@ -170,5 +200,109 @@ public class ArtifactResolverWrapper
      */
     public static void reset() {
         INSTANCES.set(null);
+    }
+    
+    /**
+     * This is a helper method that provides a facade for creating Maven artifacts
+     * with a classifier.  It contains additional code to scan the MavenProject
+     * artifacts when the groupId, version, and/or classifier values are null.
+     * This method will scan the artifacts to see if there is a unique match 
+     * based on the artifactId.  If there is not a match, an exception is 
+     * thrown.
+     *
+     * @param groupId
+     * A String containing the maven artifact's group id
+     * @param artifactId
+     * A String containing the maven artifact's artifactId
+     * @param version
+     * A String containing the maven artifact's version
+     * @param type
+     * A String containing the maven artifact's type
+     * @param classifier
+     * A String containing the maven artifact's classifier
+     * @throws ArtifactResolutionException
+     * Thrown if artifact cannot be resolved
+     * @throws ArtifactNotFoundException
+     * Thrown if artifact is resolved and verifyArtifact is 'true' and artifact
+     * is not configured in the pom.xml file.
+     */
+    public Artifact createArtifactWithClassifier(String groupId, 
+                                                 String artifactId, 
+                                                 String version, 
+                                                 String type, 
+                                                 String classifier) 
+        throws ArtifactResolutionException, ArtifactNotFoundException {
+        Artifact artifact = null;
+        if (artifactId == null) {
+            throw new ArtifactResolutionException("Cannot resolve artifact: artifactId is null", groupId, artifactId, version, null, null, null, null);
+        } else if (groupId == null || version == null || classifier == null) {
+            artifact = resolveArtifactUsingMavenProjectArtifacts(artifactId, groupId, version, type, classifier);            
+            // If no matches, throw exception
+            if (artifact == null) {
+                throw new ArtifactResolutionException("Cannot resolve artifact. Classifier: "+classifier, groupId, artifactId, version, null, null, null, null); 
+            }
+        } else {
+            artifact = getFactory().createArtifactWithClassifier(groupId, artifactId, version, type, classifier);
+            if (verifyArtifact) {
+                // If 'true', check to see if artifact can be resolved by looking
+                // at artifacts configured in the MavenProject object via the pom.xml file
+                artifact = resolveArtifactUsingMavenProjectArtifacts(artifactId, groupId, version, type, classifier);
+                // If no matches, throw exception
+                if (artifact == null) {
+                    throw new ArtifactNotFoundException("Artifact not found in pom.xml. Classifier: "+classifier, groupId, artifactId, version, type, null, null, null, null); 
+                }
+            }
+        }
+        
+        return artifact;
+    }
+    
+    /*
+     * This method tries to match a request against artifacts loaded by Maven and
+     * exposed through the MavenProject object. 
+     *
+     * NOTE: This method may return 'null'.
+     */
+    private Artifact resolveArtifactUsingMavenProjectArtifacts(String artifactId,
+                                                       String groupId,
+                                                       String version,
+                                                       String type,
+                                                       String classifier)
+        throws ArtifactResolutionException {
+        Artifact artifactMatch = null;
+        // Do match based on artifactId.  If value is null or if no match, throw exception
+        if (artifactId == null) {
+            throw new ArtifactResolutionException("Cannot resolve artifact: artifactId is null", groupId, artifactId, version, type, null, null, null);
+        } 
+        Set<Artifact> artifacts = project.getArtifacts();
+        for (Artifact artifact : artifacts) {
+            String aid = artifact.getArtifactId();            
+            if (aid != null && aid.equalsIgnoreCase(artifactId)) {
+                artifactMatch = artifact;
+                // Match based on artifactId.  Try to match based on groupId
+                String gid = artifact.getGroupId();
+                if (gid != null && gid.equalsIgnoreCase(groupId)) {
+                    artifactMatch = artifact;
+                    // Match based on groupId.  Try to match based on version
+                    String ver = artifact.getVersion();
+                    if (ver != null && ver.equalsIgnoreCase(version)) {
+                        artifactMatch = artifact;
+                        // Match based on version.  Try to match based on type
+                        String typ = artifact.getType();
+                        if (typ != null && typ.equalsIgnoreCase(type)) {
+                            artifactMatch = artifact;
+                            // Match based on type. Try to match based on classifier
+                            String cls = artifact.getClassifier();
+                            if (cls != null && cls.equalsIgnoreCase(classifier)) {
+                                artifactMatch = artifact;
+                                // We have an exact match. Stop processing.
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return artifactMatch;
     }
 }
