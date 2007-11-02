@@ -17,9 +17,9 @@ package org.apache.maven.plugin.antrun;
  */
 
 import java.io.File;
-import java.util.Iterator;
 import java.util.List;
 import org.apache.maven.artifact.factory.ArtifactFactory;
+import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.ArtifactResolver;
 
@@ -121,6 +121,10 @@ public class AntRunMojo
     private List remoteRepositories;   
     
     
+    /**
+     * @component
+     */
+    protected ArtifactMetadataSource artifactMetadataSource;
     
     /**
      * @see org.apache.maven.plugin.Mojo#execute()
@@ -160,6 +164,7 @@ public class AntRunMojo
                                             factory,
                                             localRepository,
                                             remoteRepositories,
-                                            project);
+                                            project,
+                                            artifactMetadataSource);
     }
 }
