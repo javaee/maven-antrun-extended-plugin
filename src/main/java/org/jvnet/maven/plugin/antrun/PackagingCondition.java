@@ -1,4 +1,4 @@
-package org.apache.maven.plugin.antrun;
+package org.jvnet.maven.plugin.antrun;
 
 import java.io.File;
 import javax.xml.parsers.DocumentBuilder;

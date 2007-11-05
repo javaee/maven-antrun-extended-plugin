@@ -1,4 +1,4 @@
-package org.apache.maven.plugin.antrun;
+package org.jvnet.maven.plugin.antrun;
 
 /*
  * Copyright 2006 The Apache Software Foundation.

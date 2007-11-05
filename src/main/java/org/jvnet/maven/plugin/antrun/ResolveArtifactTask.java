@@ -1,4 +1,4 @@
-package org.apache.maven.plugin.antrun;
+package org.jvnet.maven.plugin.antrun;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.tools.ant.BuildException;

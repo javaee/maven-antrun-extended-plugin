@@ -1,4 +1,4 @@
-package org.apache.maven.plugin.antrun;
+package org.jvnet.maven.plugin.antrun;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -87,13 +87,19 @@ public class ArtifactResolverWrapper {
      * @param localRepository
      * @param remoteRepositories
      */
-    private ArtifactResolverWrapper( ArtifactResolver resolver, ArtifactFactory factory,
-            ArtifactRepository localRepository, List remoteRepositories, 
-            ArtifactMetadataSource artifactMetadataSource ) {
+    private ArtifactResolverWrapper( 
+        ArtifactResolver resolver, 
+        ArtifactFactory factory,
+        ArtifactRepository localRepository, 
+        List remoteRepositories, 
+        MavenProject project,
+        ArtifactMetadataSource artifactMetadataSource) 
+    {
         this.resolver = resolver;
         this.factory = factory;
         this.localRepository = localRepository;
         this.remoteRepositories = remoteRepositories;
+        this.project = project;
         this.artifactMetadataSource = artifactMetadataSource;
         INSTANCES.set(this);
     }
@@ -105,13 +111,20 @@ public class ArtifactResolverWrapper {
      * @param remoteRepositories
      * @return an instance of ArtifactResolverWrapper
      */
-    public static ArtifactResolverWrapper getInstance( ArtifactResolver resolver,
-            ArtifactFactory factory,
-            ArtifactRepository localRepository,
-            List remoteRepositories,
-            MavenProject project,
-            ArtifactMetadataSource artifactMetadataSource) {
-        return new ArtifactResolverWrapper( resolver, factory, localRepository, remoteRepositories, artifactMetadataSource);
+    public static ArtifactResolverWrapper getInstance( 
+        ArtifactResolver resolver,
+        ArtifactFactory factory,
+        ArtifactRepository localRepository,
+        List remoteRepositories,
+        MavenProject project,
+        ArtifactMetadataSource artifactMetadataSource) 
+    {
+        return new ArtifactResolverWrapper( resolver, 
+                                            factory, 
+                                            localRepository, 
+                                            remoteRepositories, 
+                                            project, 
+                                            artifactMetadataSource);
     }
     
     protected ArtifactFactory getFactory() {

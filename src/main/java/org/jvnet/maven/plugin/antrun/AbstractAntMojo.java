@@ -1,4 +1,4 @@
-package org.apache.maven.plugin.antrun;
+package org.jvnet.maven.plugin.antrun;
 
 /*
  * Copyright 2005-2006 The Apache Software Foundation.
@@ -26,7 +26,7 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.antrun.components.AntTargetConverter;
+import org.jvnet.maven.plugin.antrun.components.AntTargetConverter;
 import org.apache.maven.project.MavenProject;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DefaultLogger;
