@@ -246,8 +246,9 @@ public class ArtifactResolverWrapper {
             artifact = resolveArtifactUsingMavenProjectArtifacts(artifactId, groupId, version, type, classifier);
             // If no matches, throw exception
             if (artifact == null) {
-                throw new IOException("Cannot resolve artifact. Classifier: "+classifier+" groupId: "+ groupId 
-                        + " artifactId: " + artifactId + " version: " + version);
+                throw new IOException("Cannot resolve artifact. " +" groupId: "+ groupId 
+                        + " artifactId: " + artifactId + " version: " + version 
+                        + " type: "+ type + " classifier: "+ classifier);
             }
         } else {
             artifact = getFactory().createArtifactWithClassifier(groupId, artifactId, version, type, classifier);
@@ -257,8 +258,9 @@ public class ArtifactResolverWrapper {
                 artifact = resolveArtifactUsingMavenProjectArtifacts(artifactId, groupId, version, type, classifier);
                 // If no matches, throw exception
                 if (artifact == null) {
-                    throw new IOException("Artifact not found in pom.xml. Classifier: "+classifier+" groupId: "+ groupId 
-                        + " artifactId: " + artifactId + " version: " + version);
+                    throw new IOException("Artifact not found in pom.xml. " +" groupId: "+ groupId 
+                        + " artifactId: " + artifactId + " version: " + version 
+                        + " type: "+ type + " classifier: "+ classifier);
                 }
             }
         }
@@ -273,7 +275,8 @@ public class ArtifactResolverWrapper {
         String type,
         String classifier) 
         throws ArtifactResolutionException, 
-               ArtifactNotFoundException {
+               ArtifactNotFoundException,
+               IOException {
         Set artifacts = new HashSet();
         Artifact artifact = createArtifactWithClassifier(
             groupId,
