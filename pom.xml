@@ -20,7 +20,7 @@
   <artifactId>maven-antrun-extended-plugin</artifactId>
   <packaging>maven-plugin</packaging>
   <name>Maven AntRun Extended Plugin</name>
-  <version>1.1</version>
+  <version>1.1-SNAPSHOT</version>
   <description>Runs ant scripts embedded in the POM</description>
 
   <dependencies>
