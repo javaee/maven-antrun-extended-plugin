@@ -20,7 +20,7 @@
   <artifactId>maven-antrun-extended-plugin</artifactId>
   <packaging>maven-plugin</packaging>
   <name>Maven AntRun Extended Plugin</name>
-  <version>1.1-SNAPSHOT</version>
+  <version>1.1</version>
   <description>Runs ant scripts embedded in the POM</description>
 
   <dependencies>
@@ -54,8 +54,7 @@
   </dependencies>
 
   <scm>
-    <developerConnection>scm:svn:https://maven-antrun-extended-plugin.dev.java.net/svn/maven-antrun-extended-plugin/trunk maven-antrun-extended-plugin
-    </developerConnection>
+    <developerConnection>scm:svn:https://maven-antrun-extended-plugin.dev.java.net/svn/maven-antrun-extended-plugin/trunk maven-antrun-extended-plugin/tags/maven-antrun-extended-plugin-1.1</developerConnection>
   </scm>
   <build>
     <plugins>
