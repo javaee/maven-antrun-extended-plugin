@@ -53,6 +53,10 @@
     </dependency>
   </dependencies>
 
+  <scm>
+    <developerConnection>scm:svn:https://maven-antrun-extended-plugin.dev.java.net/svn/maven-antrun-extended-plugin/trunk maven-antrun-extended-plugin
+    </developerConnection>
+  </scm>
   <build>
     <plugins>
       <plugin>
