@@ -238,15 +238,16 @@ public class ArtifactResolverWrapper {
             String version,
             String type,
             String classifier)
-            throws ArtifactResolutionException, ArtifactNotFoundException {
+            throws IOException {
         Artifact artifact = null;
         if (artifactId == null) {
-            throw new ArtifactResolutionException("Cannot resolve artifact: artifactId is null", groupId, artifactId, version, null, null, null, null);
+            throw new IOException("Cannot resolve artifact: artifactId is null");
         } else if (groupId == null || version == null || classifier == null) {
             artifact = resolveArtifactUsingMavenProjectArtifacts(artifactId, groupId, version, type, classifier);
             // If no matches, throw exception
             if (artifact == null) {
-                throw new ArtifactResolutionException("Cannot resolve artifact. Classifier: "+classifier, groupId, artifactId, version, null, null, null, null);
+                throw new IOException("Cannot resolve artifact. Classifier: "+classifier+" groupId: "+ groupId 
+                        + " artifactId: " + artifactId + " version: " + version);
             }
         } else {
             artifact = getFactory().createArtifactWithClassifier(groupId, artifactId, version, type, classifier);
@@ -256,7 +257,8 @@ public class ArtifactResolverWrapper {
                 artifact = resolveArtifactUsingMavenProjectArtifacts(artifactId, groupId, version, type, classifier);
                 // If no matches, throw exception
                 if (artifact == null) {
-                    throw new ArtifactNotFoundException("Artifact not found in pom.xml. Classifier: "+classifier, groupId, artifactId, version, type, null, null, null, null);
+                    throw new IOException("Artifact not found in pom.xml. Classifier: "+classifier+" groupId: "+ groupId 
+                        + " artifactId: " + artifactId + " version: " + version);
                 }
             }
         }
@@ -301,11 +303,11 @@ public class ArtifactResolverWrapper {
             String version,
             String type,
             String classifier)
-            throws ArtifactResolutionException {
+            throws IOException {
         Artifact artifactMatch = null;
         // Do match based on artifactId.  If value is null or if no match, throw exception
         if (artifactId == null) {
-            throw new ArtifactResolutionException("Cannot resolve artifact: artifactId is null", groupId, artifactId, version, type, null, null, null);
+            throw new IOException("Cannot resolve artifact: artifactId is null");
         }
         Set<Artifact> artifacts = project.getArtifacts();
         for (Artifact artifact : artifacts) {
