@@ -112,6 +112,8 @@ public abstract class AbstractAntMojo
                 getLog().info( "Executing tasks" );
             }
 
+            configureProject(antProject);
+
             antTasks.execute();
 
             if ( getLog().isInfoEnabled() )
@@ -131,6 +133,13 @@ public abstract class AbstractAntMojo
         {
             throw new MojoExecutionException( "Error executing ant tasks: " + e.getMessage(), e );
         }
+    }
+
+    /**
+     * Provides an opportunity for derived types to customize Ant project.
+     */
+    protected void configureProject(Project antProject) {
+
     }
 
     /**

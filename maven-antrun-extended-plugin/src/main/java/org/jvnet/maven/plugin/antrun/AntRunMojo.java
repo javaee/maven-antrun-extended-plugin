@@ -18,6 +18,8 @@ package org.jvnet.maven.plugin.antrun;
 
 import java.io.File;
 import java.util.List;
+import java.beans.Introspector;
+
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -26,6 +28,8 @@ import org.apache.maven.artifact.resolver.ArtifactResolver;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
 import org.apache.tools.ant.Target;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.taskdefs.Taskdef;
 
 /**
  * Maven AntRun Mojo.
@@ -167,4 +171,26 @@ public class AntRunMojo
                                             project,
                                             artifactMetadataSource);
     }
+
+    @Override
+    protected void configureProject(Project antProject) {
+        // define all tasks
+        for (Class task : TASKS) {
+            String taskName = task.getSimpleName();
+            if(taskName.endsWith("Task")) // chop off 'Task'
+                taskName = taskName.substring(0,taskName.length()-4);
+            taskName = Introspector.decapitalize(taskName);
+
+            Taskdef def = new Taskdef();
+            def.setName(taskName);
+            def.setClassname(task.getName());
+            def.setProject(antProject);
+            def.execute();
+        }
+    }
+
+    private static final Class[] TASKS = new Class[] {
+        ResolveArtifactTask.class,
+        ResolveAllTask.class
+    };
 }
