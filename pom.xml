@@ -21,7 +21,39 @@
   <packaging>maven-plugin</packaging>
   <name>Maven AntRun Extended Plugin</name>
   <version>1.4-SNAPSHOT</version>
-  <description>Runs ant scripts embedded in the POM</description>
+  <description>This extended antrun maven plugin enables users not only to run ant scripts embedded in the POM, but also to reference maven dependencies using Ant task classes. This enables the user to delegate more complex tasks to Ant such as constructing file-based installation distros.</description>
+
+  <licenses>
+    <license>
+      <name>Apache License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
+      <distribution/>
+      <comments/>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <id>psterk</id>
+      <name>Paul Sterk</name>
+      <email>paul.sterk@sun.com</email>
+      <url/>
+      <organization>Sun Microsystems</organization>
+      <organizationUrl>http://www.sun.com</organizationUrl>
+      <roles/>
+      <timezone>US Pacific</timezone>
+      <properties/>
+    </developer>
+    <developer>
+      <id>kohsuke</id>
+      <name>Kohsuke Kawaguchi</name>
+      <email>kohsuke.kawaguchi@sun.com</email>
+      <url>http://weblogs.java.net/blog/kohsuke/</url>
+      <organization>Sun Microsystems</organization>
+      <organizationUrl>http://www.sun.com</organizationUrl>
+      <roles/>
+      <timezone>US Pacific</timezone>
+    </developer>
+  </developers>
 
   <dependencies>
     <dependency>
