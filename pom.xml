@@ -20,15 +20,15 @@
   <artifactId>maven-antrun-extended-plugin</artifactId>
   <packaging>maven-plugin</packaging>
   <name>Maven AntRun Extended Plugin</name>
-  <version>1.4-SNAPSHOT</version>
+  <version>1.4</version>
   <description>This extended antrun maven plugin enables users not only to run ant scripts embedded in the POM, but also to reference maven dependencies using Ant task classes. This enables the user to delegate more complex tasks to Ant such as constructing file-based installation distros.</description>
 
   <licenses>
     <license>
       <name>Apache License, Version 2.0</name>
       <url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
-      <distribution/>
-      <comments/>
+      <distribution />
+      <comments />
     </license>
   </licenses>
   <developers>
@@ -36,12 +36,12 @@
       <id>psterk</id>
       <name>Paul Sterk</name>
       <email>paul.sterk@sun.com</email>
-      <url/>
+      <url />
       <organization>Sun Microsystems</organization>
       <organizationUrl>http://www.sun.com</organizationUrl>
-      <roles/>
+      <roles />
       <timezone>US Pacific</timezone>
-      <properties/>
+      <properties />
     </developer>
     <developer>
       <id>kohsuke</id>
@@ -50,7 +50,7 @@
       <url>http://weblogs.java.net/blog/kohsuke/</url>
       <organization>Sun Microsystems</organization>
       <organizationUrl>http://www.sun.com</organizationUrl>
-      <roles/>
+      <roles />
       <timezone>US Pacific</timezone>
     </developer>
   </developers>
@@ -86,7 +86,7 @@
   </dependencies>
 
   <scm>
-    <developerConnection>scm:svn:https://maven-antrun-extended-plugin.dev.java.net/svn/maven-antrun-extended-plugin/tags/maven-antrun-extended-plugin-1.1</developerConnection>
+    <developerConnection>scm:svn:https://maven-antrun-extended-plugin.dev.java.net/svn/maven-antrun-extended-plugin/tags/maven-antrun-extended-plugin-1.4</developerConnection>
   </scm>
   <build>
     <plugins>
