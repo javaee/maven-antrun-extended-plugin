@@ -34,6 +34,10 @@
     <menu name="Overview">
       <item name="Introduction" href="index.html"/>
       <item name="Usage" href="usage.html"/>
+
+      <item name="Mailing lists" href="/servlets/ProjectMailingListList"/>
+      <item name="Source code" href="/source/browse/maven-antrun-extended-plugin/trunk/maven-antrun-extended-plugin/"/>
+      <item name="Issues" href="/servlets/ProjectIssues"/>
     </menu>
 
     ${reports}
