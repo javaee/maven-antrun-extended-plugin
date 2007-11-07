@@ -86,7 +86,8 @@
   </dependencies>
 
   <scm>
-    <developerConnection>scm:svn:https://maven-antrun-extended-plugin.dev.java.net/svn/maven-antrun-extended-plugin/tags/maven-antrun-extended-plugin-1.1</developerConnection>
+    <connection         >scm:svn:https://maven-antrun-extended-plugin.dev.java.net/svn/maven-antrun-extended-plugin/trunk/maven-antrun-extended-plugin/</connection>
+    <developerConnection>scm:svn:https://maven-antrun-extended-plugin.dev.java.net/svn/maven-antrun-extended-plugin/trunk/maven-antrun-extended-plugin/</developerConnection>
   </scm>
   <build>
     <plugins>
