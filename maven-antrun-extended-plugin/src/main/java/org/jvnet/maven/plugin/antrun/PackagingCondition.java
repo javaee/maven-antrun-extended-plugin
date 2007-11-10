@@ -27,7 +27,7 @@ public class PackagingCondition implements Condition{
         try {
             Artifact artifact = ResolveAllTask.CURRENT_ARTIFACT.get();
             // Get the pom.xml file for each artifact
-            ArtifactResolverWrapper w = ArtifactResolverWrapper.get();
+            MavenComponentBag w = MavenComponentBag.get();
             Artifact pom = w.createArtifactWithClassifier(
                 artifact.getGroupId(),
                 artifact.getArtifactId(),

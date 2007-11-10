@@ -45,20 +45,20 @@ public class AttachArtifactTask extends Task {
     }
 
     public void execute() throws BuildException {
-        ArtifactResolverWrapper w = ArtifactResolverWrapper.get();
+        MavenComponentBag w = MavenComponentBag.get();
 
         if(classifier==null) {
             if(type!=null)
                 throw new BuildException("type is set but classifier is not set");
             log("Attaching "+file, Project.MSG_VERBOSE);
-            w.getProject().getArtifact().setFile(file);
+            w.project.getArtifact().setFile(file);
         } else {
             log("Attaching "+file+" as an attached artifact", Project.MSG_VERBOSE);
 
             String type = this.type;
             if(type==null)  type = getExtension(file.getName());
 
-            w.projectHelper.attachArtifact(w.getProject(),type,classifier,file);
+            w.projectHelper.attachArtifact(w.project,type,classifier,file);
         }
     }
 

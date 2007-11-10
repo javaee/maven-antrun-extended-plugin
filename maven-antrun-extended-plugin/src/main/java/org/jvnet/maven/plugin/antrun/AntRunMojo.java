@@ -145,7 +145,7 @@ public class AntRunMojo
         try {
             executeTasks( tasks, project, pluginArtifacts );
         } finally {
-            ArtifactResolverWrapper.reset();
+            MavenComponentBag.reset();
         }
 
         if ( sourceRoot != null )
@@ -162,13 +162,13 @@ public class AntRunMojo
     }
     
     /*
-     * This method is invoked to initialize the ArtifactResolverWrapper and 
+     * This method is invoked to initialize the MavenComponentBag and
      * set it in ArtifactResolverWrapperThreadLocal.  This thread local class
      * can be used by other classes, such as Ant tasks, to obtain the
-     * ArtifactResolverWrapper.
+     * MavenComponentBag.
      */
     private void initArtifactResolverWrapper() {
-        new ArtifactResolverWrapper(resolver,
+        new MavenComponentBag(resolver,
                 factory,
                 localRepository,
                 remoteRepositories,
