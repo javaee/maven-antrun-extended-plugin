@@ -19,11 +19,6 @@ package org.jvnet.maven.plugin.antrun;
  * under the License.
  */
 
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
@@ -34,6 +29,12 @@ import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
 import org.apache.maven.artifact.resolver.ArtifactResolver;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.MavenProjectHelper;
+
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Wrapper object to resolve artifact.
@@ -78,6 +79,8 @@ public class ArtifactResolverWrapper {
      * Default is 'true'.
      */
     private boolean verifyArtifact = true;
+
+    public final MavenProjectHelper projectHelper;
     
     /**
      * Creates a wrapper and associates that with the current thread.
@@ -87,12 +90,13 @@ public class ArtifactResolverWrapper {
      * @param localRepository
      * @param remoteRepositories
      */
-    private ArtifactResolverWrapper( 
+    /*package*/ ArtifactResolverWrapper(
         ArtifactResolver resolver, 
         ArtifactFactory factory,
         ArtifactRepository localRepository, 
         List remoteRepositories, 
         MavenProject project,
+        MavenProjectHelper projectHelper,
         ArtifactMetadataSource artifactMetadataSource) 
     {
         this.resolver = resolver;
@@ -100,33 +104,11 @@ public class ArtifactResolverWrapper {
         this.localRepository = localRepository;
         this.remoteRepositories = remoteRepositories;
         this.project = project;
+        this.projectHelper = projectHelper;
         this.artifactMetadataSource = artifactMetadataSource;
         INSTANCES.set(this);
     }
-    
-    /**
-     * @param resolver
-     * @param factory
-     * @param localRepository
-     * @param remoteRepositories
-     * @return an instance of ArtifactResolverWrapper
-     */
-    public static ArtifactResolverWrapper getInstance( 
-        ArtifactResolver resolver,
-        ArtifactFactory factory,
-        ArtifactRepository localRepository,
-        List remoteRepositories,
-        MavenProject project,
-        ArtifactMetadataSource artifactMetadataSource) 
-    {
-        return new ArtifactResolverWrapper( resolver, 
-                                            factory, 
-                                            localRepository, 
-                                            remoteRepositories, 
-                                            project, 
-                                            artifactMetadataSource);
-    }
-    
+
     protected ArtifactFactory getFactory() {
         return factory;
     }
