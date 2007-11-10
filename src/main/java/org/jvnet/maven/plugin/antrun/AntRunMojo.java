@@ -16,20 +16,20 @@ package org.jvnet.maven.plugin.antrun;
  * limitations under the License.
  */
 
-import java.io.File;
-import java.util.List;
-import java.beans.Introspector;
-
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.ArtifactResolver;
-
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
-import org.apache.tools.ant.Target;
+import org.apache.maven.project.MavenProjectHelper;
 import org.apache.tools.ant.Project;
+import org.apache.tools.ant.Target;
 import org.apache.tools.ant.taskdefs.Taskdef;
+
+import java.beans.Introspector;
+import java.io.File;
+import java.util.List;
 
 /**
  * Maven AntRun Mojo.
@@ -123,7 +123,11 @@ public class AntRunMojo
      * @parameter expression="${project.remoteArtifactRepositories}"
      */
     private List remoteRepositories;   
-    
+
+    /**
+     * @component
+     */
+    private MavenProjectHelper projectHelper;
     
     /**
      * @component
@@ -141,7 +145,7 @@ public class AntRunMojo
         try {
             executeTasks( tasks, project, pluginArtifacts );
         } finally {
-            ArtifactResolverWrapper.reset();
+            MavenComponentBag.reset();
         }
 
         if ( sourceRoot != null )
@@ -158,18 +162,18 @@ public class AntRunMojo
     }
     
     /*
-     * This method is invoked to initialize the ArtifactResolverWrapper and 
+     * This method is invoked to initialize the MavenComponentBag and
      * set it in ArtifactResolverWrapperThreadLocal.  This thread local class
      * can be used by other classes, such as Ant tasks, to obtain the
-     * ArtifactResolverWrapper.
+     * MavenComponentBag.
      */
-    private void initArtifactResolverWrapper() {        
-        ArtifactResolverWrapper.getInstance(resolver, 
-                                            factory,
-                                            localRepository,
-                                            remoteRepositories,
-                                            project,
-                                            artifactMetadataSource);
+    private void initArtifactResolverWrapper() {
+        new MavenComponentBag(resolver,
+                factory,
+                localRepository,
+                remoteRepositories,
+                project, projectHelper,
+                artifactMetadataSource);
     }
 
     @Override
@@ -191,6 +195,7 @@ public class AntRunMojo
 
     private static final Class[] TASKS = new Class[] {
         ResolveArtifactTask.class,
-        ResolveAllTask.class
+        ResolveAllTask.class,
+        AttachArtifactTask.class
     };
 }

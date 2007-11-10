@@ -5,7 +5,6 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.Copy;
-import org.apache.tools.ant.types.Path;
 
 import java.io.File;
 
@@ -67,9 +66,9 @@ public class ResolveArtifactTask extends Task {
     public void execute() throws BuildException {
         log("Starting execute", Project.MSG_DEBUG);
         try {
-            ArtifactResolverWrapper w = ArtifactResolverWrapper.get();
+            MavenComponentBag w = MavenComponentBag.get();
             Artifact a = w.createArtifactWithClassifier(groupId, artifactId, version, type, classifier);
-            w.getResolver().resolve(a, w.getRemoteRepositories(), w.getLocalRepository());
+            w.resolver.resolve(a, w.remoteRepositories, w.localRepository);
             // Property attribute is optional. Check for null value
             if (property != null) {                
                 getProject().setProperty(property, a.getFile().getAbsolutePath());

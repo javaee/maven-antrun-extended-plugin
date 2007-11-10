@@ -54,7 +54,7 @@ public class ResolveAllTask extends ConditionBase {
     
     public void execute() throws BuildException {   
         try {
-            ArtifactResolverWrapper w = ArtifactResolverWrapper.get();
+            MavenComponentBag w = MavenComponentBag.get();
             ArtifactResolutionResult result = w.resolveTransitively(
                 groupId,
                 artifactId,
