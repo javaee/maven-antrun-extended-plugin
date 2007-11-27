@@ -1,5 +1,6 @@
 package org.jvnet.maven.plugin.antrun;
 
+import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
@@ -45,13 +46,47 @@ public class AttachArtifactTask extends Task {
     }
 
     public void execute() throws BuildException {
-        MavenComponentBag w = MavenComponentBag.get();
+        final MavenComponentBag w = MavenComponentBag.get();
 
         if(classifier==null) {
             if(type!=null)
                 throw new BuildException("type is set but classifier is not set");
             log("Attaching "+file, Project.MSG_VERBOSE);
             w.project.getArtifact().setFile(file);
+
+            // Even if you define ArtifactHandlers as components, often because of the
+            // initialization order, a proper ArtifactHandler won't be discovered.
+            // so force our own ArtifactHandler that gets the extension right.
+            ArtifactHandler handler = new ArtifactHandler() {
+                public String getExtension() {
+                    return AttachArtifactTask.this.getExtension(file.getName());
+                }
+
+                public String getDirectory() {
+                    return null;
+                }
+
+                public String getClassifier() {
+                    return null;
+                }
+
+                public String getPackaging() {
+                    return w.project.getPackaging();
+                }
+
+                public boolean isIncludesDependencies() {
+                    return false;
+                }
+
+                public String getLanguage() {
+                    return null;
+                }
+
+                public boolean isAddedToClasspath() {
+                    return false;
+                }
+            };
+            w.project.getArtifact().setArtifactHandler(handler);
         } else {
             log("Attaching "+file+" as an attached artifact", Project.MSG_VERBOSE);
 
