@@ -1,20 +1,6 @@
 <plexus>
 
   <components>
-
-     <component>
-      <role>org.apache.maven.lifecycle.mapping.LifecycleMapping</role>
-      <role-hint>zip</role-hint>
-      <implementation>org.apache.maven.lifecycle.mapping.DefaultLifecycleMapping</implementation>
-      <configuration>
-        <phases>
-          <process-resources>org.apache.maven.plugins:maven-resources-plugin:resources</process-resources>
-          <package>org.jvnet.maven-antrun-extended-plugin:maven-antrun-extended-plugin:run</package>
-          <install>org.apache.maven.plugins:maven-install-plugin:install</install>
-        </phases>
-      </configuration>
-    </component>    
-    
     <component>
       <role>org.codehaus.plexus.component.configurator.ComponentConfigurator</role>
       <role-hint>override</role-hint>
