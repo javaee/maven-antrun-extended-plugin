@@ -20,6 +20,7 @@ package org.jvnet.maven.plugin.antrun;
  */
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -72,7 +73,9 @@ final class MavenComponentBag {
      * TODO: document that this is
      */
     public final ArtifactMetadataSource artifactMetadataSource;
-    
+
+    public final ArtifactHandlerManager artifactHandlerManager;
+
     /**
      * The boolean flag that indicates whether or not to verify that the
      * resolved artifact is contained in the pom.xml file.
@@ -97,6 +100,7 @@ final class MavenComponentBag {
         List remoteRepositories, 
         MavenProject project,
         MavenProjectHelper projectHelper,
+        ArtifactHandlerManager artifactHandlerManager,
         ArtifactMetadataSource artifactMetadataSource) 
     {
         this.resolver = resolver;
@@ -106,6 +110,7 @@ final class MavenComponentBag {
         this.project = project;
         this.projectHelper = projectHelper;
         this.artifactMetadataSource = artifactMetadataSource;
+        this.artifactHandlerManager = artifactHandlerManager;
         INSTANCES.set(this);
     }
     
