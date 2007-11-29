@@ -1,13 +1,11 @@
 package org.jvnet.maven.plugin.antrun;
 
-import java.io.File;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import org.apache.tools.ant.taskdefs.condition.Condition;
-import org.apache.tools.ant.BuildException;
 import org.apache.maven.artifact.Artifact;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.MavenProjectBuilder;
+import org.apache.maven.project.ProjectBuildingException;
+import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.taskdefs.condition.Condition;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -22,35 +20,31 @@ public class PackagingCondition implements Condition{
     }
     
     public boolean eval() throws BuildException {
-        boolean matchesIs = false;        
-        String packagingValue = null;
+        Artifact artifact = ResolveAllTask.CURRENT_ARTIFACT.get();
+        // Get the pom.xml file for each artifact
+        MavenComponentBag w = MavenComponentBag.get();
+//            Artifact pom = w.createArtifactWithClassifier(
+//                artifact.getGroupId(),
+//                artifact.getArtifactId(),
+//                artifact.getVersion(),
+//                "pom",
+//                artifact.getClassifier());
+        // Get the value of the <packaging/> element
         try {
-            Artifact artifact = ResolveAllTask.CURRENT_ARTIFACT.get();
-            // Get the pom.xml file for each artifact
-            MavenComponentBag w = MavenComponentBag.get();
-            Artifact pom = w.createArtifactWithClassifier(
-                artifact.getGroupId(),
-                artifact.getArtifactId(),
-                artifact.getVersion(),
-                "pom",
-                artifact.getClassifier());
-            // Get the value of the <packaging/> element
-            File pomFile = pom.getFile();
-            DocumentBuilder parser = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-            Document document = parser.parse(pomFile);
-            Element element = document.getElementById("packaging");
-            packagingValue = element.getNodeValue();
+            // TODO: get MavenProjectBuilder into Bag
+            MavenProjectBuilder builder = null;
+            // TODO: reuse the laoded project among ohter conditions
+            MavenProject p = builder.buildFromRepository(artifact, w.project.getRemoteArtifactRepositories(), w.localRepository);
+
+            String packagingValue = p.getPackaging();
             if (packagingValue == null) {
                 // Set to default Maven packaging type
                 // TODO. Use a maven constant to set this value. Remove hard wiring value.
                 packagingValue = "jar";
             }
-            if (is.matches(packagingValue)) {
-                matchesIs = true;
-            }
-        } catch (Throwable t) {
-            throw new BuildException(t);
+            return is.matches(packagingValue);
+        } catch (ProjectBuildingException e) {
+            throw new BuildException("Failed to load POM for "+artifact,e);
         }
-        return matchesIs;
     }
 }

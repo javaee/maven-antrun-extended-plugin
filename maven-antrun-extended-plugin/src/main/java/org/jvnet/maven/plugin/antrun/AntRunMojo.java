@@ -24,6 +24,7 @@ import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
+import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Target;
 import org.apache.tools.ant.taskdefs.Taskdef;
@@ -139,6 +140,11 @@ public class AntRunMojo
      * @component
      */
     private ArtifactHandlerManager artifactHandlerManager;
+
+    /**
+     * @component
+     */
+    private MavenProjectBuilder mavenProjectBuilder;
 
     /**
      * @see org.apache.maven.plugin.Mojo#execute()
