@@ -147,7 +147,7 @@ public class AntRunMojoTest
         try
         {
             maven.execute( project,
-                           Arrays.asList( new String[] { "org.jvnet.maven-antrun-extended-plugin:maven-antrun-extended-plugin:1.1:run" } ),
+                           Arrays.asList( new String[] { "org.jvnet.maven-antrun-extended-plugin:maven-antrun-extended-plugin:run" } ),
                            eventMonitor, new ConsoleDownloadMonitor(), properties, new File( PlexusTestCase
                                .getBasedir(), "/target/test/unit/" + testProject + "/" ) );
 
@@ -159,7 +159,7 @@ public class AntRunMojoTest
             maven.setLocalRepositoryDirectory(null);
             maven.start();
             maven.execute( project,
-                           Arrays.asList( new String[] { "org.jvnet.maven-antrun-extended-plugin:maven-antrun-extended-plugin:1.1:run" } ),
+                           Arrays.asList( new String[] { "org.jvnet.maven-antrun-extended-plugin:maven-antrun-extended-plugin:run" } ),
                            eventMonitor, new ConsoleDownloadMonitor(), properties, new File( PlexusTestCase
                                .getBasedir(), "/target/test/unit/" + testProject + "/" ) );
             return outOS.toString();
