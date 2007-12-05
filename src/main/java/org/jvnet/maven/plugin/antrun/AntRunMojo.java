@@ -136,6 +136,9 @@ public class AntRunMojo
      */
     protected ArtifactMetadataSource artifactMetadataSource;
 
+    
+    private MavenComponentBag bag;
+    
     /**
      * @component
      */
@@ -153,7 +156,14 @@ public class AntRunMojo
         throws MojoExecutionException
     {
         initArtifactResolverWrapper();
-
+        /* Uncomment the following code to debug the MavenComponentBag        
+        bag.setVerifyArtifact(false);
+        try {
+            bag.resolveTransitively("org.glassfish.web", "gf-web-connector", "10.0-SNAPSHOT", "jar", "runtime");
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
+         */
         try {
             executeTasks( tasks, project, pluginArtifacts );
         } finally {
@@ -180,12 +190,14 @@ public class AntRunMojo
      * MavenComponentBag.
      */
     private void initArtifactResolverWrapper() {
-        new MavenComponentBag(resolver,
+        bag = new MavenComponentBag(resolver,
                 factory,
                 localRepository,
                 remoteRepositories,
                 project, projectHelper,
-                artifactHandlerManager, artifactMetadataSource);
+                artifactHandlerManager, 
+                artifactMetadataSource,
+                mavenProjectBuilder);
     }
 
     @Override
@@ -208,6 +220,7 @@ public class AntRunMojo
     private static final Class[] TASKS = new Class[] {
         ResolveArtifactTask.class,
         ResolveAllTask.class,
-        AttachArtifactTask.class
+        AttachArtifactTask.class,
+        ResolveProjectArtifactIdTask.class
     };
 }

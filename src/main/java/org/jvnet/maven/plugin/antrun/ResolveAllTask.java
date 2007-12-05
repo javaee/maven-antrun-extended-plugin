@@ -1,5 +1,10 @@
 package org.jvnet.maven.plugin.antrun;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import org.apache.maven.artifact.Artifact;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.taskdefs.condition.ConditionBase;
@@ -7,6 +12,7 @@ import org.apache.tools.ant.taskdefs.condition.Condition;
 import org.apache.tools.ant.types.Path;
 import java.util.Set;
 import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
+import org.apache.tools.ant.Project;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -52,7 +58,8 @@ public class ResolveAllTask extends ConditionBase {
         this.pathId = pathId;
     }
     
-    public void execute() throws BuildException {   
+    public void execute() throws BuildException {  
+        log("Starting ResolveAllTasks.execute ", Project.MSG_DEBUG);
         try {
             MavenComponentBag w = MavenComponentBag.get();
             ArtifactResolutionResult result = w.resolveTransitively(
@@ -62,6 +69,8 @@ public class ResolveAllTask extends ConditionBase {
                 type,
                 classifier);
             Set<Artifact> artifacts = result.getArtifacts();
+            log("artifactId "+artifactId,  Project.MSG_DEBUG);
+            log("number of artifacts "+artifacts.size(), Project.MSG_DEBUG);
             // For each artifact, get the pom file and see if the value for
             // <packaging/> child element matches the Condition
             Path path = null;
@@ -79,12 +88,8 @@ public class ResolveAllTask extends ConditionBase {
                 // The current Artifact is set as a ThreadLocal variable. Invoke
                 // the Condition.eval method to see if this Artifact matches the
                 // condition expression
-                if (c.eval()) {
-                    if (path == null) {
-                        // Lazy instantiation
-                        path = new Path(getProject());
-                    }
-                    path.createPathElement().setLocation(artifact.getFile());
+                if (c == null || c.eval()) {
+                    handleArtifact(artifact, path);
                 }
             }
             if (path != null) {
@@ -93,6 +98,56 @@ public class ResolveAllTask extends ConditionBase {
         } catch (Throwable t) {
             throw new BuildException(t);
         }
+        log("Exiting ResolveAllTasks.execute ", Project.MSG_DEBUG);
+    }
+    
+    private void handleArtifact(Artifact artifact, Path path) throws 
+        FileNotFoundException, IOException {
+        log("Starting ResolveAllTasks.handleArtifact "+todir, Project.MSG_DEBUG);
+        if (path == null) {
+            // Lazy instantiation
+            path = new Path(getProject());
+        }
+        File artifactFile = artifact.getFile();
+        path.createPathElement().setLocation(artifactFile);
+        if (todir != null) {
+            // If todir is not null, copy each artifact to the todir directory
+            // Verify if todir exists
+            File todirFile = new File(todir);
+            if (! todirFile.exists()) {
+                todirFile.mkdirs();
+            }
+            String outFileName = todir + File.separator + artifactFile.getName();
+            FileInputStream in = null;
+            FileOutputStream out = null;
+            try {
+                in = new FileInputStream(artifactFile);
+                out = new FileOutputStream(outFileName);
+
+                // Transfer bytes from in to out
+                byte[] buf = new byte[1024];
+                int len;
+                while ((len = in.read(buf)) > 0) {
+                    out.write(buf, 0, len);
+                }
+            } finally {
+                if (in != null) {
+                    try {
+                        in.close();
+                    } catch (Throwable t) {
+                        //ignore
+                    }
+                }
+                if (out != null) {
+                    try {
+                        out.close();
+                    } catch (Throwable t) {
+                        //ignore
+                    }
+                }
+            }
+        }
+        log("Exiting ResolveAllTasks.handleArtifact "+todir, Project.MSG_DEBUG);
     }
 
     public static final ThreadLocal<Artifact> CURRENT_ARTIFACT = new ThreadLocal<Artifact>();

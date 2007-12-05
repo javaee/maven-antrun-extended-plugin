@@ -28,7 +28,6 @@ import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
 import org.apache.maven.artifact.resolver.ArtifactResolver;
-import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
 
@@ -36,6 +35,10 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.apache.maven.artifact.metadata.ArtifactMetadataRetrievalException;
+import org.apache.maven.artifact.metadata.ResolutionGroup;
+import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
+import org.apache.maven.project.MavenProjectBuilder;
 
 /**
  * Exposes maven components to the Ant tasks.
@@ -81,9 +84,11 @@ final class MavenComponentBag {
      * resolved artifact is contained in the pom.xml file.
      * Default is 'true'.
      */
-    public final boolean verifyArtifact = true;
+    public boolean verifyArtifact = true;
 
     public final MavenProjectHelper projectHelper;
+    
+    public final MavenProjectBuilder mavenProjectBuilder;
     
     /**
      * Creates a wrapper and associates that with the current thread.
@@ -101,7 +106,8 @@ final class MavenComponentBag {
         MavenProject project,
         MavenProjectHelper projectHelper,
         ArtifactHandlerManager artifactHandlerManager,
-        ArtifactMetadataSource artifactMetadataSource) 
+        ArtifactMetadataSource artifactMetadataSource,
+        MavenProjectBuilder mavenProjectBuilder) 
     {
         this.resolver = resolver;
         this.factory = factory;
@@ -111,7 +117,12 @@ final class MavenComponentBag {
         this.projectHelper = projectHelper;
         this.artifactMetadataSource = artifactMetadataSource;
         this.artifactHandlerManager = artifactHandlerManager;
+        this.mavenProjectBuilder = mavenProjectBuilder;
         INSTANCES.set(this);
+    }
+    
+    public void setVerifyArtifact(boolean verifyArtifact) {
+        this.verifyArtifact = verifyArtifact;
     }
     
     /**
@@ -227,14 +238,25 @@ final class MavenComponentBag {
             version,
             type,
             classifier);
-        ArtifactResolutionResult result = resolver.resolveTransitively(
-            artifacts,
-            artifact,
-            localRepository,
-            remoteRepositories,
-            artifactMetadataSource, 
-            new ScopeArtifactFilter("runtime") );
-        
+        ResolutionGroup resolutionGroup;
+        try {
+            resolutionGroup = artifactMetadataSource.retrieve( artifact, localRepository,
+                                                               project.getPluginArtifactRepositories() );
+            artifacts.addAll( resolutionGroup.getArtifacts() );
+        }
+        catch ( ArtifactMetadataRetrievalException e ) {
+            throw new ArtifactResolutionException( "Unable to download metadata from repository for artifact '" +
+            artifact.getId() + " " +e.getMessage(), artifact);
+        }
+        ArtifactResolutionResult result = 
+            resolver.resolveTransitively(
+                artifacts,
+                artifact,
+                localRepository,
+                remoteRepositories,
+                artifactMetadataSource, 
+                new ScopeArtifactFilter("runtime") 
+                );
         return result;
     }
     

@@ -23,18 +23,11 @@ public class PackagingCondition implements Condition{
         Artifact artifact = ResolveAllTask.CURRENT_ARTIFACT.get();
         // Get the pom.xml file for each artifact
         MavenComponentBag w = MavenComponentBag.get();
-//            Artifact pom = w.createArtifactWithClassifier(
-//                artifact.getGroupId(),
-//                artifact.getArtifactId(),
-//                artifact.getVersion(),
-//                "pom",
-//                artifact.getClassifier());
-        // Get the value of the <packaging/> element
         try {
-            // TODO: get MavenProjectBuilder into Bag
-            MavenProjectBuilder builder = null;
             // TODO: reuse the laoded project among ohter conditions
-            MavenProject p = builder.buildFromRepository(artifact, w.project.getRemoteArtifactRepositories(), w.localRepository);
+            MavenProject p = w.mavenProjectBuilder.buildFromRepository(artifact, 
+                                                                       w.project.getRemoteArtifactRepositories(), 
+                                                                       w.localRepository);
 
             String packagingValue = p.getPackaging();
             if (packagingValue == null) {
