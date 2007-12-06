@@ -72,7 +72,7 @@ public class ResolveAllTask extends ConditionBase {
             log("number of artifacts "+artifacts.size(), Project.MSG_DEBUG);
             // For each artifact, get the pom file and see if the value for
             // <packaging/> child element matches the Condition
-            Path path = null;
+            Path path = new Path(getProject());
             for (Artifact artifact : artifacts) {
                 CURRENT_ARTIFACT.set(artifact);
                 if (countConditions() > 1) {
@@ -90,7 +90,7 @@ public class ResolveAllTask extends ConditionBase {
                 
                 handleArtifact(artifact, path);
             }
-            if (path != null) {
+            if (pathId != null) {
                 getProject().addReference(pathId, path);
             }
         } catch (Throwable t) {
@@ -101,10 +101,6 @@ public class ResolveAllTask extends ConditionBase {
     
     private void handleArtifact(Artifact artifact, Path path) throws IOException {
         log("Starting ResolveAllTasks.handleArtifact "+todir, Project.MSG_DEBUG);
-        if (path == null) {
-            // Lazy instantiation
-            path = new Path(getProject());
-        }
         File artifactFile = artifact.getFile();
         path.createPathElement().setLocation(artifactFile);
         if (todir != null) {
