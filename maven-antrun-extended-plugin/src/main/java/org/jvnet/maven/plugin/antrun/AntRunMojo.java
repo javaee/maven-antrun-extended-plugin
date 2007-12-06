@@ -215,6 +215,13 @@ public class AntRunMojo
             def.setProject(antProject);
             def.execute();
         }
+
+        // expose basic properties
+        antProject.setProperty("artifactId",project.getArtifactId());
+        antProject.setProperty("groupId",project.getGroupId());
+        antProject.setProperty("version",project.getVersion());
+        antProject.setProperty("packaging",project.getPackaging());
+        // TODO: we can add more
     }
 
     private static final Class[] TASKS = new Class[] {
