@@ -83,7 +83,7 @@ public final class DependencyGraph {
         private final List<Edge> backward = new ArrayList<Edge>();
 
         private Node(Artifact artifact) throws ProjectBuildingException, ArtifactResolutionException, ArtifactNotFoundException {
-            if(artifact.getScope().equals("system"))
+            if("system".equals(artifact.getScope()))
                 // system scoped artifacts don't have POM, so the attempt to load it will fail.
                 pom = null;
             else {
@@ -96,8 +96,8 @@ public final class DependencyGraph {
         }
 
         private void checkArtifact(Artifact artifact) throws ArtifactResolutionException, ArtifactNotFoundException {
-            artifactFile = artifact.getFile();
             bag.resolveArtifact(artifact);
+            artifactFile = artifact.getFile();
             if(artifactFile==null)
                 throw new IllegalStateException("Artifact is not resolved yet: "+artifact);
         }
