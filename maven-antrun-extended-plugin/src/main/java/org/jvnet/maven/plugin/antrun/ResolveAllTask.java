@@ -80,17 +80,16 @@ public class ResolveAllTask extends ConditionBase {
                     throw new BuildException("You must not nest more than one "
                         + "condition into <condition>");
                 }
-                if (countConditions() < 1) {
-                    throw new BuildException("You must nest a condition into "
-                        + "<condition>");
+                if (countConditions()==1) {
+                    Condition c = (Condition) getConditions().nextElement();
+                    // The current Artifact is set as a ThreadLocal variable. Invoke
+                    // the Condition.eval method to see if this Artifact matches the
+                    // condition expression
+                    if (!c.eval())
+                        continue;   // rejected
                 }
-                Condition c = (Condition) getConditions().nextElement();            
-                // The current Artifact is set as a ThreadLocal variable. Invoke
-                // the Condition.eval method to see if this Artifact matches the
-                // condition expression
-                if (c == null || c.eval()) {
-                    handleArtifact(artifact, path);
-                }
+                
+                handleArtifact(artifact, path);
             }
             if (path != null) {
                 getProject().addReference(pathId, path);
