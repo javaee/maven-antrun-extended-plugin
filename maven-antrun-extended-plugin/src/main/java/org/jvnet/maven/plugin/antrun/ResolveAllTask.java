@@ -114,12 +114,12 @@ public class ResolveAllTask extends ConditionBase {
             File todirFile = new File(todir);
             todirFile.mkdirs();
             
-            String outFileName = todir + File.separator + artifactFile.getName();
+            File outFile = new File(todir,artifactFile.getName());
             FileInputStream in = null;
             FileOutputStream out = null;
             try {
                 in = new FileInputStream(artifactFile);
-                out = new FileOutputStream(outFileName);
+                out = new FileOutputStream(outFile);
 
                 // Transfer bytes from in to out
                 byte[] buf = new byte[1024];
