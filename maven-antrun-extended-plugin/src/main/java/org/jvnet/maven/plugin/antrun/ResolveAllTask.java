@@ -1,18 +1,17 @@
 package org.jvnet.maven.plugin.antrun;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import org.apache.commons.io.FileUtils;
 import org.apache.maven.artifact.Artifact;
-import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.taskdefs.condition.ConditionBase;
-import org.apache.tools.ant.taskdefs.condition.Condition;
-import org.apache.tools.ant.types.Path;
-import java.util.Set;
 import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
+import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
+import org.apache.tools.ant.taskdefs.condition.Condition;
+import org.apache.tools.ant.taskdefs.condition.ConditionBase;
+import org.apache.tools.ant.types.Path;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Set;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -115,34 +114,7 @@ public class ResolveAllTask extends ConditionBase {
             todirFile.mkdirs();
             
             File outFile = new File(todir,artifactFile.getName());
-            FileInputStream in = null;
-            FileOutputStream out = null;
-            try {
-                in = new FileInputStream(artifactFile);
-                out = new FileOutputStream(outFile);
-
-                // Transfer bytes from in to out
-                byte[] buf = new byte[1024];
-                int len;
-                while ((len = in.read(buf)) > 0) {
-                    out.write(buf, 0, len);
-                }
-            } finally {
-                if (in != null) {
-                    try {
-                        in.close();
-                    } catch (Throwable t) {
-                        //ignore
-                    }
-                }
-                if (out != null) {
-                    try {
-                        out.close();
-                    } catch (Throwable t) {
-                        //ignore
-                    }
-                }
-            }
+            FileUtils.copyFile(artifactFile,outFile);
         }
         log("Exiting ResolveAllTasks.handleArtifact "+todir, Project.MSG_DEBUG);
     }
