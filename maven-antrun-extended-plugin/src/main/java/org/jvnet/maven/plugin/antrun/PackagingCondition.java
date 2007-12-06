@@ -24,8 +24,12 @@ public class PackagingCondition implements Condition{
         // Get the pom.xml file for each artifact
         MavenComponentBag w = MavenComponentBag.get();
         try {
+            if(artifact.getScope().equals("system"))
+                // system scoped artifacts don't have POM, so the attempt to load it will fail.
+                return false;
+
             // TODO: reuse the laoded project among ohter conditions
-            MavenProject p = w.mavenProjectBuilder.buildFromRepository(artifact, 
+            MavenProject p = w.mavenProjectBuilder.buildFromRepository(artifact,
                                                                        w.project.getRemoteArtifactRepositories(), 
                                                                        w.localRepository);
 
