@@ -100,8 +100,7 @@ public class ResolveAllTask extends ConditionBase {
         log("Exiting ResolveAllTasks.execute ", Project.MSG_DEBUG);
     }
     
-    private void handleArtifact(Artifact artifact, Path path) throws 
-        FileNotFoundException, IOException {
+    private void handleArtifact(Artifact artifact, Path path) throws IOException {
         log("Starting ResolveAllTasks.handleArtifact "+todir, Project.MSG_DEBUG);
         if (path == null) {
             // Lazy instantiation
