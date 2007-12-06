@@ -14,6 +14,9 @@ import java.io.IOException;
 import java.util.Set;
 
 /**
+ * Transitively resolve dependencies, perform some filtering, and deliver the resulting
+ * set of artifacts in various forms (as a new {@link Path} object, into a directory, etc.)
+ *
  * @author Kohsuke Kawaguchi
  * @author Paul Sterk
  */
@@ -66,11 +69,13 @@ public class ResolveAllTask extends ConditionBase {
             MavenComponentBag w = MavenComponentBag.get();
             Set<Artifact> artifacts;
 
+            DependencyGraph g;
             // TODO: we need to be able to specify scope of the resolution
 
             if(groupId==null && artifactId==null && version==null) {
                 // if no clue is given whatsoever, use all the project dependencies
                 artifacts = w.project.getArtifacts();
+                g = new DependencyGraph(w.project.getArtifact());
             } else {
                 // otherwise pick up dependencies from the specified artifact
                 ArtifactResolutionResult result = w.resolveTransitively(
@@ -80,8 +85,10 @@ public class ResolveAllTask extends ConditionBase {
                     type,
                     classifier);
                 artifacts = result.getArtifacts();
+                g = new DependencyGraph(w.createArtifactWithClassifier(groupId,artifactId,version,type,classifier));
                 log("artifactId "+artifactId,  Project.MSG_DEBUG);
             }
+            System.out.println(g);
 
             log("number of artifacts "+artifacts.size(), Project.MSG_DEBUG);
             // For each artifact, get the pom file and see if the value for
