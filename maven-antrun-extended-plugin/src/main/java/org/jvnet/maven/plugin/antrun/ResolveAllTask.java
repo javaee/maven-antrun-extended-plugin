@@ -19,7 +19,7 @@ import java.util.Set;
  */
 public class ResolveAllTask extends ConditionBase {
     
-    private String todir;
+    private File todir;
     
     private String pathId;
     
@@ -49,8 +49,9 @@ public class ResolveAllTask extends ConditionBase {
         this.classifier = classifier;
     }
     
-    public void setTodir(String todir) {
+    public void setTodir(File todir) {
         this.todir = todir;
+        todir.mkdirs();
     }
     
     public void setPathId(String pathId) {
@@ -103,12 +104,8 @@ public class ResolveAllTask extends ConditionBase {
         log("Starting ResolveAllTasks.handleArtifact "+todir, Project.MSG_DEBUG);
         File artifactFile = artifact.getFile();
         path.createPathElement().setLocation(artifactFile);
+        // If todir is not null, copy each artifact to the todir directory
         if (todir != null) {
-            // If todir is not null, copy each artifact to the todir directory
-            // Verify if todir exists
-            File todirFile = new File(todir);
-            todirFile.mkdirs();
-            
             File outFile = new File(todir,artifactFile.getName());
             FileUtils.copyFile(artifactFile,outFile);
         }
