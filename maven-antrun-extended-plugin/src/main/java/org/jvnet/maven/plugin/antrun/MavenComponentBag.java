@@ -308,4 +308,11 @@ final class MavenComponentBag {
         }
         return artifactMatch;
     }
+
+    /**
+     * Obtains/downloads the artifact file by using the current set of repositories.
+     */
+    public void resolveArtifact(Artifact artifact) throws ArtifactResolutionException, ArtifactNotFoundException {
+        resolver.resolve(artifact,remoteRepositories,localRepository);
+    }
 }

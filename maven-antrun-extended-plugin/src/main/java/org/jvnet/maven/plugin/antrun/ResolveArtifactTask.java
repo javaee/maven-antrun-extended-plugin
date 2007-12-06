@@ -68,7 +68,7 @@ public class ResolveArtifactTask extends Task {
         try {
             MavenComponentBag w = MavenComponentBag.get();
             Artifact a = w.createArtifactWithClassifier(groupId, artifactId, version, type, classifier);
-            w.resolver.resolve(a, w.remoteRepositories, w.localRepository);
+            w.resolveArtifact(a);
             // Property attribute is optional. Check for null value
             if (property != null) {                
                 getProject().setProperty(property, a.getFile().getAbsolutePath());

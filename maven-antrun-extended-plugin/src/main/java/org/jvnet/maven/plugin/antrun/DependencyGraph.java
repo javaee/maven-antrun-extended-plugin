@@ -1,6 +1,8 @@
 package org.jvnet.maven.plugin.antrun;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.resolver.ArtifactResolutionException;
+import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
@@ -27,11 +29,11 @@ public final class DependencyGraph {
     /**
      * Creates a full dependency graph with the given artifact at the top.
      */
-    public DependencyGraph(Artifact root) throws ProjectBuildingException {
+    public DependencyGraph(Artifact root) throws ProjectBuildingException, ArtifactResolutionException, ArtifactNotFoundException {
         this.root = toNode(root);
     }
 
-    public DependencyGraph(MavenProject root) throws ProjectBuildingException {
+    public DependencyGraph(MavenProject root) throws ProjectBuildingException, ArtifactResolutionException, ArtifactNotFoundException {
         this.root = toNode(root);
     }
 
@@ -45,7 +47,7 @@ public final class DependencyGraph {
     /**
      * Gets the associated {@link Node}. If none exists, it will be created.
      */
-    private Node toNode(Artifact a) throws ProjectBuildingException {
+    private Node toNode(Artifact a) throws ProjectBuildingException, ArtifactResolutionException, ArtifactNotFoundException {
         String id = a.getGroupId()+':'+a.getArtifactId()+':'+a.getClassifier();
 
         Node n = nodes.get(id);
@@ -59,7 +61,7 @@ public final class DependencyGraph {
     /**
      * Gets the associated {@link Node}. If none exists, it will be created.
      */
-    private Node toNode(MavenProject p) throws ProjectBuildingException {
+    private Node toNode(MavenProject p) throws ProjectBuildingException, ArtifactResolutionException, ArtifactNotFoundException {
         String id = p.getGroupId()+':'+p.getArtifactId()+":null";
 
         Node n = nodes.get(id);
@@ -80,7 +82,7 @@ public final class DependencyGraph {
         private final List<Edge> forward = new ArrayList<Edge>();
         private final List<Edge> backward = new ArrayList<Edge>();
 
-        private Node(Artifact artifact) throws ProjectBuildingException {
+        private Node(Artifact artifact) throws ProjectBuildingException, ArtifactResolutionException, ArtifactNotFoundException {
             if(artifact.getScope().equals("system"))
                 // system scoped artifacts don't have POM, so the attempt to load it will fail.
                 pom = null;
@@ -93,19 +95,20 @@ public final class DependencyGraph {
             checkArtifact(artifact);
         }
 
-        private void checkArtifact(Artifact artifact) {
+        private void checkArtifact(Artifact artifact) throws ArtifactResolutionException, ArtifactNotFoundException {
             artifactFile = artifact.getFile();
+            bag.resolveArtifact(artifact);
             if(artifactFile==null)
                 throw new IllegalStateException("Artifact is not resolved yet: "+artifact);
         }
 
-        private Node(MavenProject pom) throws ProjectBuildingException {
+        private Node(MavenProject pom) throws ProjectBuildingException, ArtifactResolutionException, ArtifactNotFoundException {
             this.pom = pom;
             checkArtifact(pom.getArtifact());
             loadDependencies();
         }
 
-        private void loadDependencies() throws ProjectBuildingException {
+        private void loadDependencies() throws ProjectBuildingException, ArtifactResolutionException, ArtifactNotFoundException {
             for( Dependency d : (List<Dependency>)pom.getDependencies() ) {
                 Artifact a = bag.factory.createArtifact(d.getGroupId(), d.getArtifactId(), d.getVersion(), d.getScope(), d.getType());
                 new Edge(this,toNode(a),d.getScope(),d.isOptional());
