@@ -108,7 +108,7 @@ public final class DependencyGraph {
         private void loadDependencies() throws ProjectBuildingException {
             for( Dependency d : (List<Dependency>)pom.getDependencies() ) {
                 Artifact a = bag.factory.createArtifact(d.getGroupId(), d.getArtifactId(), d.getVersion(), d.getScope(), d.getType());
-                new Edge(this,toNode(a),d.getScope());
+                new Edge(this,toNode(a),d.getScope(),d.isOptional());
             }
         }
 
@@ -163,10 +163,16 @@ public final class DependencyGraph {
          */
         public final String scope;
 
-        public Edge(Node src, Node dst, String scope) {
+        /**
+         * True if this dependency is optional.
+         */
+        public final boolean optional;
+
+        public Edge(Node src, Node dst, String scope, boolean optional) {
             this.src = src;
             this.dst = dst;
             this.scope = scope;
+            this.optional = optional;
             src.forward.add(this);
             dst.backward.add(this);
         }
