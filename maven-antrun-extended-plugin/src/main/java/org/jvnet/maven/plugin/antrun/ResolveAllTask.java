@@ -23,7 +23,9 @@ public class ResolveAllTask extends ConditionBase {
     
     private String pathId;
     
-    private String property,groupId,artifactId,version,type="jar",classifier;
+    private String property;
+
+    private String groupId,artifactId,version,type="jar",classifier;
 
     public void setProperty(String property) {
         this.property = property;
