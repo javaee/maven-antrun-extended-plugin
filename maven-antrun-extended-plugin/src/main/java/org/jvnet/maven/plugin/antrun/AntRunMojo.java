@@ -200,7 +200,6 @@ public class AntRunMojo
                 mavenProjectBuilder);
     }
 
-    @Override
     protected void configureProject(Project antProject) {
         // define all tasks
         for (Class task : TASKS) {
