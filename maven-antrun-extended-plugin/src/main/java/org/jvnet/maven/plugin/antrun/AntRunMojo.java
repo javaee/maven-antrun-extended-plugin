@@ -227,7 +227,6 @@ public class AntRunMojo
     private static final Class[] TASKS = new Class[] {
         ResolveArtifactTask.class,
         ResolveAllTask.class,
-        AttachArtifactTask.class,
-        ResolveProjectArtifactIdTask.class
+        AttachArtifactTask.class
     };
 }
