@@ -64,14 +64,25 @@ public class ResolveAllTask extends ConditionBase {
         log("Starting ResolveAllTasks.execute ", Project.MSG_DEBUG);
         try {
             MavenComponentBag w = MavenComponentBag.get();
-            ArtifactResolutionResult result = w.resolveTransitively(
-                groupId,
-                artifactId,
-                version,
-                type,
-                classifier);
-            Set<Artifact> artifacts = result.getArtifacts();
-            log("artifactId "+artifactId,  Project.MSG_DEBUG);
+            Set<Artifact> artifacts;
+
+            // TODO: we need to be able to specify scope of the resolution
+
+            if(groupId==null && artifactId==null && version==null) {
+                // if no clue is given whatsoever, use all the project dependencies
+                artifacts = w.project.getArtifacts();
+            } else {
+                // otherwise pick up dependencies from the specified artifact
+                ArtifactResolutionResult result = w.resolveTransitively(
+                    groupId,
+                    artifactId,
+                    version,
+                    type,
+                    classifier);
+                artifacts = result.getArtifacts();
+                log("artifactId "+artifactId,  Project.MSG_DEBUG);
+            }
+
             log("number of artifacts "+artifacts.size(), Project.MSG_DEBUG);
             // For each artifact, get the pom file and see if the value for
             // <packaging/> child element matches the Condition
