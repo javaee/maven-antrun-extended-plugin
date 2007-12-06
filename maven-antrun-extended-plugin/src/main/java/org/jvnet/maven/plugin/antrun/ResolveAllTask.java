@@ -112,9 +112,8 @@ public class ResolveAllTask extends ConditionBase {
             // If todir is not null, copy each artifact to the todir directory
             // Verify if todir exists
             File todirFile = new File(todir);
-            if (! todirFile.exists()) {
-                todirFile.mkdirs();
-            }
+            todirFile.mkdirs();
+            
             String outFileName = todir + File.separator + artifactFile.getName();
             FileInputStream in = null;
             FileOutputStream out = null;
