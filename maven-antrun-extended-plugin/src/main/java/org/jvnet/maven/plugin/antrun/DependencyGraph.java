@@ -1,8 +1,8 @@
 package org.jvnet.maven.plugin.antrun;
 
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
+import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
@@ -12,6 +12,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
+import java.util.HashSet;
 
 /**
  * Graph of dependencies among Maven artifacts.
@@ -70,6 +73,27 @@ public final class DependencyGraph {
             nodes.put(id, n);
         }
         return n;
+    }
+
+    /**
+     * Accepts the visitor and invoke its visitor methods.
+     */
+    public void accept(GraphVisitor visitor) {
+        Set<Node> visited = new HashSet<Node>();
+        Stack<Node> q = new Stack<Node>();
+        q.push(root);
+
+        while(!q.isEmpty()) {
+            DependencyGraph.Node n = q.pop();
+            if(visitor.visit(n)) {
+                for (Edge e : n.forward) {
+                    if(visitor.visit(e)) {
+                        if(visited.add(e.dst))
+                            q.push(e.dst);
+                    }
+                }
+            }
+        }
     }
 
     /**
