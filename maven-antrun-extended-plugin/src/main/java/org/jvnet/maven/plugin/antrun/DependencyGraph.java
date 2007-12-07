@@ -76,6 +76,13 @@ public final class DependencyGraph {
      * Node, which represents an artifact.
      */
     public final class Node {
+        /**
+         * Basic properties of a module.
+         * If {@link #pom} is non-null, this information is redundant, but it needs to be
+         * kept separately for those rare cases where pom==null.
+         */
+        private final String groupId,artifactId,version;
+
         private final MavenProject pom;
         private /*final*/ File artifactFile;
 
@@ -83,6 +90,10 @@ public final class DependencyGraph {
         private final List<Edge> backward = new ArrayList<Edge>();
 
         private Node(Artifact artifact) throws ProjectBuildingException, ArtifactResolutionException, ArtifactNotFoundException {
+            groupId = artifact.getGroupId();
+            artifactId = artifact.getArtifactId();
+            version = artifact.getVersion();
+
             if("system".equals(artifact.getScope()))
                 // system scoped artifacts don't have POM, so the attempt to load it will fail.
                 pom = null;
@@ -104,6 +115,9 @@ public final class DependencyGraph {
 
         private Node(MavenProject pom) throws ProjectBuildingException, ArtifactResolutionException, ArtifactNotFoundException {
             this.pom = pom;
+            groupId = pom.getGroupId();
+            artifactId = pom.getArtifactId();
+            version = pom.getVersion();
             checkArtifact(pom.getArtifact());
             loadDependencies();
         }
@@ -150,6 +164,10 @@ public final class DependencyGraph {
         public List<Edge> getBackward() {
             return backward;
         }
+
+        public String toString() {
+            return groupId+':'+artifactId+':'+version;
+        }
     }
 
     public final class Edge {
@@ -164,6 +182,7 @@ public final class DependencyGraph {
 
         /**
          * Dependency scope. Stuff like "compile", "runtime", etc.
+         * Never null.
          */
         public final String scope;
 
@@ -179,6 +198,15 @@ public final class DependencyGraph {
             this.optional = optional;
             src.forward.add(this);
             dst.backward.add(this);
+        }
+
+        public String toString() {
+            StringBuilder buf = new StringBuilder();
+            buf.append(src).append("--(").append(scope);
+            if(optional)
+                buf.append("/optional");
+            buf.append(")-->").append(dst);
+            return buf.toString();            
         }
     }
 }
