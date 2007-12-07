@@ -91,8 +91,8 @@ public final class DependencyGraph {
                         bag.project.getRemoteArtifactRepositories(),
                         bag.localRepository);
                 loadDependencies();
+                checkArtifact(artifact);
             }
-            checkArtifact(artifact);
         }
 
         private void checkArtifact(Artifact artifact) throws ArtifactResolutionException, ArtifactNotFoundException {
@@ -130,7 +130,8 @@ public final class DependencyGraph {
          * Gets the artifact file, like a jar.
          *
          * @return
-         *      never null, always resolved.
+         *      for system-scoped artifacts, this may null.
+         *      For all the other modules, this is never null.
          */
         public File getArtifactFile() {
             return artifactFile;
