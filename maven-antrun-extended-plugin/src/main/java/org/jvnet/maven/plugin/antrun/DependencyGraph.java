@@ -77,8 +77,11 @@ public final class DependencyGraph {
 
     /**
      * Accepts the visitor and invoke its visitor methods.
+     *
+     * @return
+     *      Set of all visited nodes.
      */
-    public void accept(GraphVisitor visitor) {
+    public Set<Node> accept(GraphVisitor visitor) {
         Set<Node> visited = new HashSet<Node>();
         Stack<Node> q = new Stack<Node>();
         q.push(root);
@@ -94,6 +97,8 @@ public final class DependencyGraph {
                 }
             }
         }
+
+        return visited;
     }
 
     /**
