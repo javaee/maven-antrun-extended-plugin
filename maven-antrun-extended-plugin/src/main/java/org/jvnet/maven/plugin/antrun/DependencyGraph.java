@@ -165,7 +165,7 @@ public final class DependencyGraph {
          *      if POM is not available for this module.
          *      That can happen for example for system-scoped artifacts.
          */
-        public MavenProject getProject() throws ProjectBuildingException {
+        public MavenProject getProject() {
             return pom;
         }
 

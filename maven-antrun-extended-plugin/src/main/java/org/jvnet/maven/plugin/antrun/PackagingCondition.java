@@ -6,42 +6,37 @@ import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.taskdefs.condition.Condition;
+import org.jvnet.maven.plugin.antrun.DependencyGraph.Node;
 
 /**
+ * Filtering {@link Condition} that removes all artifacts that don't match
+ * the given packaging type.
+ *
  * @author Kohsuke Kawaguchi
  * @author Paul Sterk
  */
-public class PackagingCondition implements Condition{
+public class PackagingCondition extends GraphVisitingCondition {
     
-    private String is = "";
+    private String is;
     
     public void setIs(String is) {
         this.is = is;
     }
-    
-    public boolean eval() throws BuildException {
-        Artifact artifact = ResolveAllTask.CURRENT_ARTIFACT.get();
-        // Get the pom.xml file for each artifact
-        MavenComponentBag w = MavenComponentBag.get();
-        try {
-            if(artifact.getScope().equals("system"))
-                // system scoped artifacts don't have POM, so the attempt to load it will fail.
-                return false;
 
-            // TODO: reuse the laoded project among ohter conditions
-            MavenProject p = w.mavenProjectBuilder.buildFromRepository(artifact,
-                                                                       w.project.getRemoteArtifactRepositories(), 
-                                                                       w.localRepository);
+    @Override
+    public boolean filter(Node n) {
+        if(is==null)
+            throw new BuildException("<packaging> condition requires @is");
 
-            String packagingValue = p.getPackaging();
-            if (packagingValue == null) {
-                // Set to default Maven packaging type
-                // TODO. Use a maven constant to set this value. Remove hard wiring value.
-                packagingValue = "jar";
-            }
-            return is.matches(packagingValue);
-        } catch (ProjectBuildingException e) {
-            throw new BuildException("Failed to load POM for "+artifact,e);
+        MavenProject p = n.getProject();
+        if(p==null)     return false;
+
+        String pkg = p.getPackaging();
+        if(pkg==null) {
+            // Set to default Maven packaging type
+            // TODO. Use a maven constant to set this value. Remove hard wiring value.
+            pkg = "jar";
         }
+        return is.matches(pkg);
     }
 }
