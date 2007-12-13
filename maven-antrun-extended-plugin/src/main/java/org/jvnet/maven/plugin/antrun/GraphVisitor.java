@@ -98,4 +98,25 @@ public abstract class GraphVisitor {
             }
         };
     }
+
+    /**
+     * Obtains a {@link GraphVisitor} that does boolean-negation of the current {@link GraphVisitor}.
+     */
+    public GraphVisitor not() {
+        final GraphVisitor outer = this;
+        return new GraphVisitor() {
+            public boolean visit(Edge edge) {
+                return !outer.visit(edge);
+            }
+
+            public boolean visit(Node node) {
+                return !outer.visit(node);
+            }
+
+            @Override
+            public GraphVisitor not() {
+                return outer;
+            }
+        };
+    }
 }
