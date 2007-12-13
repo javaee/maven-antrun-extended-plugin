@@ -1,5 +1,11 @@
 package org.jvnet.maven.plugin.antrun;
 
+import org.jvnet.maven.plugin.antrun.DependencyGraph.Edge;
+import org.jvnet.maven.plugin.antrun.DependencyGraph.Node;
+
+import java.util.Arrays;
+import java.util.Collection;
+
 /**
  * Traverses a {@link DependencyGraph} in a depth-first order.
  * All the reachable nodes and edges are visited.
@@ -27,5 +33,69 @@ public abstract class GraphVisitor {
      */
     public boolean visit(DependencyGraph.Node node) {
         return true;
+    }
+
+    /**
+     * Combines multiple {@link GraphVisitor} by AND-ing its output.
+     * Can be used to create intersections.
+     */
+    public static GraphVisitor and(GraphVisitor... visitors) {
+        return and(Arrays.asList(visitors));
+    }
+
+    /**
+     * Combines multiple {@link GraphVisitor} by AND-ing its output.
+     * Can be used to create intersections.
+     */
+    public static GraphVisitor and(final Collection<? extends GraphVisitor> visitors) {
+        return new GraphVisitor() {
+            public boolean visit(Edge edge) {
+                for (GraphVisitor v : visitors) {
+                    if(!v.visit(edge))
+                        return false;
+                }
+                return true;
+            }
+
+            public boolean visit(Node node) {
+                for (GraphVisitor v : visitors) {
+                    if(!v.visit(node))
+                        return false;
+                }
+                return true;
+            }
+        };
+    }
+
+    /**
+     * Combines multiple {@link GraphVisitor} by OR-ing its output.
+     * Can be used to create unions.
+     */
+    public static GraphVisitor or(GraphVisitor... visitors) {
+        return or(Arrays.asList(visitors));
+    }
+
+    /**
+     * Combines multiple {@link GraphVisitor} by OR-ing its output.
+     * Can be used to create unions.
+     */
+    public static GraphVisitor or(final Collection<? extends GraphVisitor> visitors) {
+        return new GraphVisitor() {
+            public boolean visit(Edge edge) {
+                for (GraphVisitor v : visitors) {
+                    if(v.visit(edge))
+                        return true;
+                }
+                return false;
+            }
+
+            public boolean visit(Node node) {
+                for (GraphVisitor v : visitors) {
+                    if(!v.visit(node))
+                        return true;
+                }
+                return false;
+            }
+        };
     }
 }
