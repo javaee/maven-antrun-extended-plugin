@@ -110,6 +110,15 @@ public final class DependencyGraph {
     /**
      * Accepts the visitor and invoke its visitor methods.
      *
+     * <p>
+     * This method is convenient for obtaining a sub-graph of dependencies
+     * by filtering out nodes/edges. For example, to obtain all the transitive
+     * dependencies that exclude provided/test dependencies, you can do:
+     *
+     * <pre>
+     * accept(new {@link ScopeFilter}("compile","runtime"))
+     * </pre>
+     *
      * @return
      *      Set of all visited nodes.
      */
