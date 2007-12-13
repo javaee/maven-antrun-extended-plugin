@@ -8,16 +8,48 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
 
 import java.io.File;
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
-import java.util.HashSet;
 
 /**
  * Graph of dependencies among Maven artifacts.
+ *
+ * <p>
+ * This graph, which consists of interconnected {@link Node}s and {@link Edge}s,
+ * represents a complete dependency graph rooted at the given Maven module.
+ * The constructor recursively parses all POMs for the dependency and builds this information.
+ *
+ * <p>
+ * For example, if you have 4 modules A,B,C, and D that has the dependencies among them as follows:
+ * <pre>
+ * A->B,C
+ * B->D
+ * C->D
+ * </pre>
+ * <p>
+ * Then if you construct a graph from 'A', you'll get a graph of four nodes (each representing
+ * maven module A,B,C, and D) and four edges (each representing dependencies among them.)
+ *
+ * <p>
+ * Once constructed, a graph is accessible in several ways:
+ *
+ * <ul>
+ * <li>
+ * Start with {@link #getRoot() the root node} and traverse through edges like
+ * {@link Node#getForward()}.
+ *
+ * <li>
+ * Use {@link #accept(GraphVisitor)} and obtain a sub-graph that matches the given
+ * criteria.
+ * </ul>
+ *
+ *
  * @author Kohsuke Kawaguchi
  */
 public final class DependencyGraph {
@@ -188,10 +220,40 @@ public final class DependencyGraph {
         }
 
         /**
+         * Gets the nodes that this node depends on.
+         */
+        public List<Node> getForwardNodes() {
+            return new AbstractList<Node>() {
+                public Node get(int index) {
+                    return forward.get(index).dst;
+                }
+
+                public int size() {
+                    return forward.size();
+                }
+            };
+        }
+
+        /**
          * Gets the backward dependency edges (modules that depend on this module.)
          */
         public List<Edge> getBackward() {
             return backward;
+        }
+
+        /**
+         * Gets the nodes that depend on this node.
+         */
+        public List<Node> getBackwardNodes() {
+            return new AbstractList<Node>() {
+                public Node get(int index) {
+                    return backward.get(index).src;
+                }
+
+                public int size() {
+                    return backward.size();
+                }
+            };
         }
 
         public String toString() {
