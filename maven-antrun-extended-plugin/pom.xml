@@ -4,7 +4,7 @@
   <artifactId>maven-antrun-extended-plugin</artifactId>
   <packaging>maven-plugin</packaging>
   <name>Maven AntRun Extended Plugin</name>
-  <version>1.10</version>
+  <version>1.11-SNAPSHOT</version>
   <description>This extended antrun maven plugin enables users not only to run ant scripts embedded in the POM, but also to reference maven dependencies using Ant task classes. This enables the user to delegate more complex tasks to Ant such as constructing file-based installation distros.</description>
 
   <licenses>
@@ -173,6 +173,6 @@
     <!-- skipping tests until someone decides to fix this -->
     <maven.test.skip>true</maven.test.skip>
     <!-- if you need to debug against a different version of option, -Dmaven.version=2.0.7 -->
-    <maven.version>2.0.1</maven.version>
+    <maven.version>2.0.7</maven.version>
   </properties>
 </project>
