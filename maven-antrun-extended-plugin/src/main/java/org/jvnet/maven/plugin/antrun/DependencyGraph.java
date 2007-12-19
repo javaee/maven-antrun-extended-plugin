@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 import java.util.Collections;
+import java.util.Collection;
 
 /**
  * Graph of dependencies among Maven artifacts.
@@ -46,7 +47,7 @@ import java.util.Collections;
  * {@link Node#getForwardEdges(DependencyGraph)}.
  *
  * <li>
- * Use {@link #accept(GraphVisitor)} and obtain a sub-graph that matches the given
+ * Use {@link #createSubGraph(GraphVisitor)} and obtain a sub-graph that matches the given
  * criteria.
  * </ul>
  *
@@ -85,6 +86,18 @@ public final class DependencyGraph {
         this.root = toNode(root);
     }
 
+    public DependencyGraph(Node root, Collection<Node> nodes, Collection<Edge> edges) {
+        this.root = root;
+        if(!nodes.contains(root))
+            throw new IllegalArgumentException();
+        for (Node n : nodes)
+            this.nodes.put(n.getId(),n);
+        for (Edge e : edges) {
+            e.addEdge(forwardEdges,e.src);
+            e.addEdge(backwardEdges,e.dst);
+        }
+    }
+
     /**
      * Gets the root Node.
      */
@@ -121,7 +134,7 @@ public final class DependencyGraph {
     }
 
     /**
-     * Accepts the visitor and invoke its visitor methods.
+     * Accepts the visitor and invoke its visitor methods to create a sub-graph.
      *
      * <p>
      * This method is convenient for obtaining a sub-graph of dependencies
@@ -129,14 +142,15 @@ public final class DependencyGraph {
      * dependencies that exclude provided/test dependencies, you can do:
      *
      * <pre>
-     * accept(new {@link ScopeFilter}("compile","runtime"))
+     * createSubgraph(new {@link ScopeFilter}("compile","runtime"))
      * </pre>
      *
      * @return
      *      Set of all visited nodes.
      */
-    public Set<Node> accept(GraphVisitor visitor) {
+    public DependencyGraph createSubGraph(GraphVisitor visitor) {
         Set<Node> visited = new HashSet<Node>();
+        List<Edge> edges = new ArrayList<Edge>();
         Stack<Node> q = new Stack<Node>();
         q.push(root);
 
@@ -145,6 +159,7 @@ public final class DependencyGraph {
             if(visitor.visit(n)) {
                 for (Edge e : n.getForwardEdges(this)) {
                     if(visitor.visit(e)) {
+                        edges.add(e);
                         if(visited.add(e.dst))
                             q.push(e.dst);
                     }
@@ -152,7 +167,26 @@ public final class DependencyGraph {
             }
         }
 
-        return visited;
+        return new DependencyGraph(root,visited,edges);
+    }
+
+    public DependencyGraph createSubGraph(Collection<Node> nodes) {
+        return createSubGraph(root,nodes);
+    }
+
+    /**
+     * Creates a sub-graph from the given set of nodes (which must be subset of
+     * nodes in the current graph) with all edges { (u,v) | u \in nodes, v \in nodes }  
+     */
+    public DependencyGraph createSubGraph(Node root, Collection<Node> nodes) {
+        List<Edge> edges = new ArrayList<Edge>();
+        for (List<Edge> el : forwardEdges.values()) {
+            for (Edge e : el) {
+                if(nodes.contains(e.src) && nodes.contains(e.dst))
+                    edges.add(e);
+            }
+        }
+        return new DependencyGraph(root,nodes,edges);
     }
 
     /**
@@ -169,7 +203,7 @@ public final class DependencyGraph {
          * If {@link #pom} is non-null, this information is redundant, but it needs to be
          * kept separately for those rare cases where pom==null.
          */
-        private final String groupId,artifactId,version;
+        private final String groupId,artifactId,version,classifier;
 
         private final MavenProject pom;
         private /*final*/ File artifactFile;
@@ -178,6 +212,7 @@ public final class DependencyGraph {
             groupId = artifact.getGroupId();
             artifactId = artifact.getArtifactId();
             version = artifact.getVersion();
+            classifier = artifact.getClassifier();
 
             if("system".equals(artifact.getScope()))
                 // system scoped artifacts don't have POM, so the attempt to load it will fail.
@@ -203,6 +238,7 @@ public final class DependencyGraph {
             groupId = pom.getGroupId();
             artifactId = pom.getArtifactId();
             version = pom.getVersion();
+            classifier = null;
             checkArtifact(pom.getArtifact(),g.bag);
             loadDependencies(g);
         }
@@ -290,6 +326,10 @@ public final class DependencyGraph {
 
         public String toString() {
             return groupId+':'+artifactId+':'+version;
+        }
+
+        public String getId() {
+            return groupId+':'+artifactId+':'+classifier;
         }
     }
 
