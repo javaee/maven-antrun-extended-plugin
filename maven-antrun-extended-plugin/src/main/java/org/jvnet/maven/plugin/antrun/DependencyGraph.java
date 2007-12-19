@@ -86,23 +86,49 @@ public final class DependencyGraph {
         this.root = toNode(root);
     }
 
-    public DependencyGraph(Node root, Collection<Node> nodes, Collection<Edge> edges) {
+    /**
+     * Used to create a subgraph.
+     * <p>
+     * This method assumes that all nodes and edges are connected,
+     * hence the 'private' access. Use {@link #createSubGraph(GraphVisitor)}
+     * to construct a subset reliably.
+     */
+    private DependencyGraph(Node root, Collection<Node> nodes, Collection<Edge> edges) {
         this.root = root;
-        if(!nodes.contains(root))
-            throw new IllegalArgumentException();
-        for (Node n : nodes)
-            this.nodes.put(n.getId(),n);
-        for (Edge e : edges) {
-            e.addEdge(forwardEdges,e.src);
-            e.addEdge(backwardEdges,e.dst);
+        if(root!=null) {
+            Set<Node> reachable = new HashSet<Node>();
+
+            if(!nodes.contains(root))
+                throw new IllegalArgumentException();
+            for (Node n : nodes)
+                this.nodes.put(n.getId(),n);
+            for (Edge e : edges) {
+                e.addEdge(forwardEdges,e.src);
+                e.addEdge(backwardEdges,e.dst);
+                reachable.add(e.dst);
+            }
+
+            // some nodes were unreachable
+            if(reachable.size()!=this.nodes.size())
+                throw new IllegalArgumentException();
         }
     }
 
     /**
-     * Gets the root Node.
+     * Gets the root node.
+     *
+     * <p>
+     * This is non-null unless this graph is {@link #isEmpty() empty}.
      */
     public Node getRoot() {
         return root;
+    }
+
+    /**
+     * Returns true if the graph contains nothing at all.
+     */
+    public boolean isEmpty() {
+        return root==null;
     }
 
     /**
@@ -156,10 +182,21 @@ public final class DependencyGraph {
      *      Set of all visited nodes.
      */
     public DependencyGraph createSubGraph(GraphVisitor visitor) {
+        return createSubGraph(root,visitor);
+    }
+
+    /**
+     * Visits the graph started at the given node, and creates a sub-graph
+     * from visited nodes and edges.
+     *
+     * <p>
+     * This is the slightly generalized version of {@link #createSubGraph(GraphVisitor)}
+     */
+    public DependencyGraph createSubGraph(Node node, GraphVisitor visitor) {
         Set<Node> visited = new HashSet<Node>();
         List<Edge> edges = new ArrayList<Edge>();
         Stack<Node> q = new Stack<Node>();
-        q.push(root);
+        q.push(node);
 
         while(!q.isEmpty()) {
             DependencyGraph.Node n = q.pop();
@@ -174,11 +211,7 @@ public final class DependencyGraph {
             }
         }
 
-        return new DependencyGraph(root,visited,edges);
-    }
-
-    public DependencyGraph createSubGraph(Collection<Node> nodes) {
-        return createSubGraph(root,nodes);
+        return new DependencyGraph(node,visited,edges);
     }
 
     /**
