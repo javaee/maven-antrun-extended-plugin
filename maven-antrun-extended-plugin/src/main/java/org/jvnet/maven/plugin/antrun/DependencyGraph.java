@@ -78,6 +78,9 @@ public final class DependencyGraph {
         this.root = toNode(root);
     }
 
+    /**
+     * Creates a full dependency graph with the given project at the top.
+     */
     public DependencyGraph(MavenProject root) throws ProjectBuildingException, ArtifactResolutionException, ArtifactNotFoundException {
         this.root = toNode(root);
     }
