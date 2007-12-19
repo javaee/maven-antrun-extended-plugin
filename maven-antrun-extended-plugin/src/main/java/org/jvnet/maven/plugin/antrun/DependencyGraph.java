@@ -106,6 +106,13 @@ public final class DependencyGraph {
     }
 
     /**
+     * Returns all nodes in this graph.
+     */
+    public Collection<Node> getAllNodes() {
+        return nodes.values();
+    }
+
+    /**
      * Gets the associated {@link Node}. If none exists, it will be created.
      */
     private Node toNode(Artifact a) throws ProjectBuildingException, ArtifactResolutionException, ArtifactNotFoundException {

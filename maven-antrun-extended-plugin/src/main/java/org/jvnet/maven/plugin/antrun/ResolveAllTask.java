@@ -6,12 +6,10 @@ import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.taskdefs.condition.Condition;
 import org.apache.tools.ant.taskdefs.condition.ConditionBase;
 import org.apache.tools.ant.types.Path;
-import org.jvnet.maven.plugin.antrun.DependencyGraph.Edge;
 import org.jvnet.maven.plugin.antrun.DependencyGraph.Node;
 
 import java.io.File;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.Collection;
 
 /**
  * Transitively resolve dependencies, perform some filtering, and deliver the resulting
@@ -74,30 +72,33 @@ public class ResolveAllTask extends ConditionBase {
             }
 
             log("Graph="+g,Project.MSG_DEBUG);
+//
+//            final Condition c = getCondition();
+//
+//            // visit the graph and determine the subset of artifacts
+//            Set<Node> nodes = g.createSubGraph(new GraphVisitor() {
+//                public boolean visit(Edge edge) {
+//                    GraphVisitingCondition.setCurrent(edge);
+//                    return c.eval();
+//                }
+//
+//                public boolean visit(Node node) {
+//                    GraphVisitingCondition.setCurrent(node);
+//                    return c.eval();
+//                }
+//            });
+//
+//            // further filter out nodes
+//            for (Iterator<Node> itr = nodes.iterator(); itr.hasNext();) {
+//                GraphVisitingCondition.setCurrentFilterNode(itr.next());
+//                if(!c.eval())
+//                    itr.remove();
+//            }
 
-            final Condition c = getCondition();
+            // TODO: apply transformation to g
 
-            // visit the graph and determine the subset of artifacts
-            Set<Node> nodes = g.accept(new GraphVisitor() {
-                public boolean visit(Edge edge) {
-                    GraphVisitingCondition.setCurrent(edge);
-                    return c.eval();
-                }
-
-                public boolean visit(Node node) {
-                    GraphVisitingCondition.setCurrent(node);
-                    return c.eval();
-                }
-            });
-
-            // further filter out nodes 
-            for (Iterator<Node> itr = nodes.iterator(); itr.hasNext();) {
-                GraphVisitingCondition.setCurrentFilterNode(itr.next());
-                if(!c.eval())
-                    itr.remove();
-            }
-
-            log("Filtered down to "+nodes.size()+" artifact(s)",Project.MSG_DEBUG);
+            Collection<Node> nodes = g.getAllNodes();
+            log("Filtered down to "+ nodes.size()+" artifact(s)",Project.MSG_DEBUG);
             for (Node n : nodes)
                 log("  "+n,Project.MSG_DEBUG);
 
