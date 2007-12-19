@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import java.util.Collections;
 
 /**
  * Graph of dependencies among Maven artifacts.
@@ -42,7 +43,7 @@ import java.util.Stack;
  * <ul>
  * <li>
  * Start with {@link #getRoot() the root node} and traverse through edges like
- * {@link Node#getForward()}.
+ * {@link Node#getForwardEdges(DependencyGraph)}.
  *
  * <li>
  * Use {@link #accept(GraphVisitor)} and obtain a sub-graph that matches the given
@@ -60,6 +61,15 @@ public final class DependencyGraph {
      * All {@link Node}s keyed by "groupId:artifactId:classifier"
      */
     private final Map<String,Node> nodes = new HashMap<String, Node>();
+
+    /**
+     * Forward edges.
+     *
+     * Edges are kept on {@link DependencyGraph} so that we can
+     * create multiple {@link DependencyGraph}s that share the same node set.
+     */
+    private final Map<Node,List<Edge>> forwardEdges = new HashMap<Node, List<Edge>>();
+    private final Map<Node,List<Edge>> backwardEdges = new HashMap<Node, List<Edge>>();
 
     /**
      * Creates a full dependency graph with the given artifact at the top.
@@ -87,7 +97,7 @@ public final class DependencyGraph {
 
         Node n = nodes.get(id);
         if(n==null) {
-            n = new Node(a);
+            n = new Node(a,this);
             nodes.put(id, n);
         }
         return n;
@@ -101,7 +111,7 @@ public final class DependencyGraph {
 
         Node n = nodes.get(id);
         if(n==null) {
-            n = new Node(p);
+            n = new Node(p,this);
             nodes.put(id, n);
         }
         return n;
@@ -130,7 +140,7 @@ public final class DependencyGraph {
         while(!q.isEmpty()) {
             DependencyGraph.Node n = q.pop();
             if(visitor.visit(n)) {
-                for (Edge e : n.forward) {
+                for (Edge e : n.getForwardEdges(this)) {
                     if(visitor.visit(e)) {
                         if(visited.add(e.dst))
                             q.push(e.dst);
@@ -144,8 +154,13 @@ public final class DependencyGraph {
 
     /**
      * Node, which represents an artifact.
+     *
+     * <p>
+     * A single {@link Node} can be used in multiple {@link DependencyGraph} objects,
+     * so the graph traversal method all takes {@link DependencyGraph} object
+     * to determine the context in which the operation works.
      */
-    public final class Node {
+    public static final class Node {
         /**
          * Basic properties of a module.
          * If {@link #pom} is non-null, this information is redundant, but it needs to be
@@ -156,10 +171,7 @@ public final class DependencyGraph {
         private final MavenProject pom;
         private /*final*/ File artifactFile;
 
-        private final List<Edge> forward = new ArrayList<Edge>();
-        private final List<Edge> backward = new ArrayList<Edge>();
-
-        private Node(Artifact artifact) throws ProjectBuildingException, ArtifactResolutionException, ArtifactNotFoundException {
+        private Node(Artifact artifact, DependencyGraph g) throws ProjectBuildingException, ArtifactResolutionException, ArtifactNotFoundException {
             groupId = artifact.getGroupId();
             artifactId = artifact.getArtifactId();
             version = artifact.getVersion();
@@ -168,34 +180,34 @@ public final class DependencyGraph {
                 // system scoped artifacts don't have POM, so the attempt to load it will fail.
                 pom = null;
             else {
-                pom = bag.mavenProjectBuilder.buildFromRepository(artifact,
-                        bag.project.getRemoteArtifactRepositories(),
-                        bag.localRepository);
-                loadDependencies();
-                checkArtifact(artifact);
+                pom = g.bag.mavenProjectBuilder.buildFromRepository(artifact,
+                        g.bag.project.getRemoteArtifactRepositories(),
+                        g.bag.localRepository);
+                loadDependencies(g);
+                checkArtifact(artifact,g.bag);
             }
         }
 
-        private void checkArtifact(Artifact artifact) throws ArtifactResolutionException, ArtifactNotFoundException {
+        private void checkArtifact(Artifact artifact, MavenComponentBag bag) throws ArtifactResolutionException, ArtifactNotFoundException {
             bag.resolveArtifact(artifact);
             artifactFile = artifact.getFile();
             if(artifactFile==null)
                 throw new IllegalStateException("Artifact is not resolved yet: "+artifact);
         }
 
-        private Node(MavenProject pom) throws ProjectBuildingException, ArtifactResolutionException, ArtifactNotFoundException {
+        private Node(MavenProject pom, DependencyGraph g) throws ProjectBuildingException, ArtifactResolutionException, ArtifactNotFoundException {
             this.pom = pom;
             groupId = pom.getGroupId();
             artifactId = pom.getArtifactId();
             version = pom.getVersion();
-            checkArtifact(pom.getArtifact());
-            loadDependencies();
+            checkArtifact(pom.getArtifact(),g.bag);
+            loadDependencies(g);
         }
 
-        private void loadDependencies() throws ProjectBuildingException, ArtifactResolutionException, ArtifactNotFoundException {
+        private void loadDependencies(DependencyGraph g) throws ProjectBuildingException, ArtifactResolutionException, ArtifactNotFoundException {
             for( Dependency d : (List<Dependency>)pom.getDependencies() ) {
-                Artifact a = bag.factory.createArtifact(d.getGroupId(), d.getArtifactId(), d.getVersion(), d.getScope(), d.getType());
-                new Edge(this,toNode(a),d.getScope(),d.isOptional());
+                Artifact a = g.bag.factory.createArtifact(d.getGroupId(), d.getArtifactId(), d.getVersion(), d.getScope(), d.getType());
+                new Edge(g,this,g.toNode(a),d.getScope(),d.isOptional());
             }
         }
 
@@ -224,15 +236,29 @@ public final class DependencyGraph {
         /**
          * Gets the forward dependency edges (modules that this module depends on.)
          */
-        public List<Edge> getForward() {
-            return forward;
+        public List<Edge> getForwardEdges(DependencyGraph g) {
+            return getEdges(g.forwardEdges);
         }
 
         /**
-         * Gets the nodes that this node depends on.
+         * Gets the backward dependency edges (modules that depend on this module.)
          */
-        public List<Node> getForwardNodes() {
+        public List<Edge> getBackwardEdges(DependencyGraph g) {
+            return getEdges(g.backwardEdges);
+        }
+
+        private List<Edge> getEdges(Map<Node, List<Edge>> allEdges) {
+            List<Edge> edges = allEdges.get(this);
+            if(edges==null) return Collections.emptyList();
+            return edges;
+        }
+
+        /**
+         * Gets the nodes that the given node depends on.
+         */
+        public List<Node> getForwardNodes(final DependencyGraph g) {
             return new AbstractList<Node>() {
+                final List<Edge> forward = getForwardEdges(g);
                 public Node get(int index) {
                     return forward.get(index).dst;
                 }
@@ -244,17 +270,11 @@ public final class DependencyGraph {
         }
 
         /**
-         * Gets the backward dependency edges (modules that depend on this module.)
+         * Gets the nodes that depend on the given node.
          */
-        public List<Edge> getBackward() {
-            return backward;
-        }
-
-        /**
-         * Gets the nodes that depend on this node.
-         */
-        public List<Node> getBackwardNodes() {
+        public List<Node> getBackwardNodes(final DependencyGraph g) {
             return new AbstractList<Node>() {
+                final List<Edge> backward = getBackwardEdges(g);
                 public Node get(int index) {
                     return backward.get(index).src;
                 }
@@ -270,7 +290,7 @@ public final class DependencyGraph {
         }
     }
 
-    public final class Edge {
+    public static final class Edge {
         /**
          * The module that depends on another.
          */
@@ -291,13 +311,20 @@ public final class DependencyGraph {
          */
         public final boolean optional;
 
-        public Edge(Node src, Node dst, String scope, boolean optional) {
+        public Edge(DependencyGraph g, Node src, Node dst, String scope, boolean optional) {
             this.src = src;
             this.dst = dst;
             this.scope = scope;
             this.optional = optional;
-            src.forward.add(this);
-            dst.backward.add(this);
+            addEdge(g.forwardEdges,src);
+            addEdge(g.forwardEdges,dst);
+        }
+
+        private void addEdge(Map<Node, List<Edge>> edgeSet, Node index) {
+            List<Edge> l = edgeSet.get(index);
+            if(l==null)
+                edgeSet.put(index,l=new ArrayList<Edge>());
+            l.add(this);
         }
 
         public String toString() {
