@@ -266,7 +266,7 @@ final class MavenComponentBag {
      *
      * NOTE: This method may return 'null'.
      */
-    private Artifact resolveArtifactUsingMavenProjectArtifacts(String artifactId,
+    public Artifact resolveArtifactUsingMavenProjectArtifacts(String artifactId,
             String groupId,
             String version,
             String type,
