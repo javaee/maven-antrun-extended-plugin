@@ -29,15 +29,8 @@ public final class ScopeFilter extends GraphVisitor implements GraphFilter {
     public DependencyGraph process(DependencyGraph dependencyGraph) {
         // Create a subgraph of the dependencyGraph by using this class as a 
         // GraphVisitor.
-        DependencyGraph dg = dependencyGraph.createSubGraph(this);
-        return dg;
+        return dependencyGraph.createSubGraph(this);
     }    
-  
-    @Override
-    public boolean visit(DependencyGraph.Node node) {
-        String scope = node.getProject().getArtifact().getScope();
-        return scopes.contains(scope);
-    }
     
     @Override
     public boolean visit(DependencyGraph.Edge edge) {
