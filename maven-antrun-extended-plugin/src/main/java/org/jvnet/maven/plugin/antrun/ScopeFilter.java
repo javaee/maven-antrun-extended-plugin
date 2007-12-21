@@ -34,8 +34,6 @@ public final class ScopeFilter extends GraphVisitor implements GraphFilter {
     
     @Override
     public boolean visit(DependencyGraph.Edge edge) {
-        String scope = edge.dst.getProject().getArtifact().getScope();
-        return scopes.contains(scope);
+        return scopes.contains(edge.scope);
     }
-
 }
