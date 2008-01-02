@@ -7,6 +7,7 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.Path;
+import org.apache.tools.ant.types.FileSet;
 import org.jvnet.maven.plugin.antrun.DependencyGraph.Node;
 
 import java.io.File;
@@ -118,16 +119,20 @@ public class ResolveAllTask extends Task {
             if(todir!=null) {
                 // copy files to the specified target directory.
                 // use the <copy> task implementation to do up-to-date check.
+                Copy cp = new Copy();
+                cp.setTaskName(getTaskName());
+                cp.setProject(getProject());
+                cp.setTodir(todir);
+
                 for (Node n : nodes) {
                     File f = n.getArtifactFile();
                     if(f!=null) {
-                        Copy cp = new Copy();
-                        cp.setProject(getProject());
-                        cp.setFile(f);
-                        cp.setTofile(new File(todir,f.getName()));
-                        cp.execute();
+                        FileSet fs = new FileSet();
+                        fs.setFile(f);
+                        cp.addFileset(fs);
                     }
                 }
+                cp.execute();
             }
         } catch (AbstractArtifactResolutionException e) {
             throw new BuildException(e);
