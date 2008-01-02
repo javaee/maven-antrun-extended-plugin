@@ -141,6 +141,13 @@ public final class DependencyGraph {
     }
 
     /**
+     * Checks if the graph contains the given node.
+     */
+    public boolean contains(Node node) {
+        return nodes.containsKey(node.getId());
+    }
+
+    /**
      * Gets the associated {@link Node}. If none exists, it will be created.
      */
     private Node toNode(Artifact a) throws ProjectBuildingException, ArtifactResolutionException, ArtifactNotFoundException {
