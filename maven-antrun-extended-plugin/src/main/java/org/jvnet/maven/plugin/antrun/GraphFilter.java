@@ -1,6 +1,7 @@
 package org.jvnet.maven.plugin.antrun;
 
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.ProjectComponent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,7 +11,7 @@ import java.util.List;
  * 
  * @author psterk
  */
-public abstract class GraphFilter {
+public abstract class GraphFilter extends ProjectComponent {
     protected final List<GraphFilter> children = new ArrayList<GraphFilter>();
 
 
