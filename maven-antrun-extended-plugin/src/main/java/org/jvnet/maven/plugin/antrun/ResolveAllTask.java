@@ -124,15 +124,21 @@ public class ResolveAllTask extends Task {
                 cp.setProject(getProject());
                 cp.setTodir(todir);
 
+                boolean hasSomethingToCopy=false;
                 for (Node n : nodes) {
                     File f = n.getArtifactFile();
                     if(f!=null) {
                         FileSet fs = new FileSet();
                         fs.setFile(f);
                         cp.addFileset(fs);
+                        hasSomethingToCopy=true;
                     }
                 }
-                cp.execute();
+
+                if(hasSomethingToCopy)
+                    cp.execute();
+                else
+                    cp.log("Nothing to copy",Project.MSG_INFO);
             }
         } catch (AbstractArtifactResolutionException e) {
             throw new BuildException(e);
