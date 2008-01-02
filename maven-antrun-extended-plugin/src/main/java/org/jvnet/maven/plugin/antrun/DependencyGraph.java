@@ -150,7 +150,7 @@ public final class DependencyGraph {
     /**
      * Gets the associated {@link Node}. If none exists, it will be created.
      */
-    private Node toNode(Artifact a) throws ProjectBuildingException, ArtifactResolutionException, ArtifactNotFoundException {
+    public Node toNode(Artifact a) throws ProjectBuildingException, ArtifactResolutionException, ArtifactNotFoundException {
         String id = a.getGroupId()+':'+a.getArtifactId()+':'+a.getClassifier();
 
         Node n = nodes.get(id);

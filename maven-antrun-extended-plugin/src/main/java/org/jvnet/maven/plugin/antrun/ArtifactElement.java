@@ -59,7 +59,8 @@ public class ArtifactElement {
      * Creates an {@link Artifact} from the configured information,
      * by possibly guessing parameters that were missing.
      */
-    public Artifact createArtifact(MavenComponentBag bag) throws IOException {
+    public Artifact createArtifact() throws IOException {
+        MavenComponentBag bag = MavenComponentBag.get();
         return bag.createArtifactWithClassifier(groupId,artifactId,version,type,classifier);
     }
 
@@ -67,7 +68,7 @@ public class ArtifactElement {
      * Retrurns the ID of this artifact after guessing omitted parameters.
      * The returned string follows the {@link Artifact#getId()} format.
      */
-    public String getId(MavenComponentBag bag) throws IOException {
-        return createArtifact(bag).getId();
+    public String getId() throws IOException {
+        return createArtifact().getId();
     }
 }

@@ -79,7 +79,7 @@ public final class ExcludeArtifactsTransitivelyFilter extends GraphFilter implem
         // at this point we have a valid MavenComponentBag to perform this resolution.
         try {
             for (ArtifactElement ae : artifactElements)
-                addArtifact(ae.createArtifact(MavenComponentBag.get()));
+                addArtifact(ae.createArtifact());
             artifactElements.clear();
         } catch (IOException e) {
             throw new BuildException(e);
