@@ -35,13 +35,13 @@ public final class GraphRetentionSetFilter extends GraphFilter {
         try {
 // Step 1. Subtract out all the artifacts specified in the artifactIds
             // collection by doing set subtraction
-            ExcludeArtifactsFilter sbf = new ExcludeArtifactsFilter(artifactIds);
+            ExcludeArtifactsTransitivelyFilter sbf = new ExcludeArtifactsTransitivelyFilter(artifactIds);
             DependencyGraph subtractionSet = evaluateChild().createSubGraph(sbf);
 
             // Step 2. Create the retention set by subtracting the artifacts in the
             // subtractionSet created in Step 1 from the original dependencyGraph set
             Collection<String> subSetArtifactIds = getArtifactIds(subtractionSet);
-            ExcludeArtifactsFilter sbf2 = new ExcludeArtifactsFilter(subSetArtifactIds);
+            ExcludeArtifactsTransitivelyFilter sbf2 = new ExcludeArtifactsTransitivelyFilter(subSetArtifactIds);
             return subtractionSet.createSubGraph(sbf2);
         } catch (IOException e) {
             throw new BuildException("Failed to resolve artifacts",e);

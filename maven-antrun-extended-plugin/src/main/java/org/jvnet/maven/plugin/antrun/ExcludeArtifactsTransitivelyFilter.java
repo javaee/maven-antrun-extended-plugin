@@ -18,7 +18,7 @@ import java.util.Set;
  *
  * @author Paul Sterk
  */
-public final class GraphSubtractionFilter extends GraphFilter implements GraphVisitor {
+public final class ExcludeArtifactsTransitivelyFilter extends GraphFilter implements GraphVisitor {
     /**
      * IDs of the artifacts to exclude. "groupId:artifactId:classifier".
      * These three are sufficient to identify an artifact uniquely within the context of single project
@@ -28,23 +28,23 @@ public final class GraphSubtractionFilter extends GraphFilter implements GraphVi
 
     private final List<ArtifactElement> artifactElements = new ArrayList<ArtifactElement>();
 
-    public GraphSubtractionFilter(Collection<String> artifactIds) throws IOException {
+    public ExcludeArtifactsTransitivelyFilter(Collection<String> artifactIds) throws IOException {
         for (String artifactId : artifactIds)
             addArtifactId(artifactId);
     }
 
-    public GraphSubtractionFilter(String... artifactIds) throws IOException {
+    public ExcludeArtifactsTransitivelyFilter(String... artifactIds) throws IOException {
         this(Arrays.asList(artifactIds));
     }
 
-    public GraphSubtractionFilter(String artifactId) throws IOException {
+    public ExcludeArtifactsTransitivelyFilter(String artifactId) throws IOException {
         addArtifactId(artifactId);
     }
 
     /**
      * Constructor for Ant.
      */
-    public GraphSubtractionFilter() {
+    public ExcludeArtifactsTransitivelyFilter() {
     }
 
     /**
