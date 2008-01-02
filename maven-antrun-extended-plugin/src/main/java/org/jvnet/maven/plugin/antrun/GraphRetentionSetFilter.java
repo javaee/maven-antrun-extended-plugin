@@ -17,18 +17,17 @@ import java.io.IOException;
  * @author Paul Sterk
  */
 public final class GraphRetentionSetFilter extends GraphFilter {
-    private final Collection<String> artifactIds;
+    private final Collection<String> artifactIds = new HashSet<String>();
 
     public GraphRetentionSetFilter(Collection<String> artifactIds) {
-        this.artifactIds = artifactIds;
+        this.artifactIds.addAll(artifactIds);
     }
 
     public GraphRetentionSetFilter(String... artifactIds) {
-        this.artifactIds = Arrays.asList(artifactIds);
+        this(Arrays.asList(artifactIds));
     }
 
-    public GraphRetentionSetFilter(String artifactId) {
-        this.artifactIds = Collections.singleton(artifactId);
+    public GraphRetentionSetFilter() {
     }
 
     public DependencyGraph process() {
