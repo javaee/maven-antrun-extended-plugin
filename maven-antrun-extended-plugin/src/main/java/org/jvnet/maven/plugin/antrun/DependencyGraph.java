@@ -188,7 +188,8 @@ public final class DependencyGraph {
      * </pre>
      *
      * @return
-     *      Set of all visited nodes.
+     *      A sub-graph of this graph that consists of nodes and edges for which the visitor returns true.
+     *      Can be an empty graph, but never null.
      */
     public DependencyGraph createSubGraph(GraphVisitor visitor) {
         return createSubGraph(root,visitor);
