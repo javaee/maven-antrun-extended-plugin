@@ -242,7 +242,7 @@ public class AntRunMojo
 
     private static final Class[] FILTERS = new Class[] {
         GraphRetentionSetFilter.class,
-        GraphSubtractionFilter.class,
+        ExcludeArtifactsFilter.class,
         PackagingFilter.class,
         ScopeFilter.class
     };
