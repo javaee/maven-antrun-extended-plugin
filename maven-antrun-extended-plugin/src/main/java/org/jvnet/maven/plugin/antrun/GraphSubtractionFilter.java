@@ -1,15 +1,16 @@
 package org.jvnet.maven.plugin.antrun;
 
 
-import java.io.IOException;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.List;
-import java.util.ArrayList;
-
 import org.apache.maven.artifact.Artifact;
 import org.apache.tools.ant.BuildException;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Use this filter to create a subgraph a DependencyGraph. Indicate which artifacts
@@ -22,20 +23,18 @@ public final class GraphSubtractionFilter extends GraphFilter implements GraphVi
 
     private final List<ArtifactElement> artifactElements = new ArrayList<ArtifactElement>();
 
-    public GraphSubtractionFilter(Collection<String> artifactIds) {
+    public GraphSubtractionFilter(Collection<String> artifactIds) throws IOException {
         for (String artifactId : artifactIds) {
-            this.artifacts.add(resolveArtifact(artifactId));
+            this.artifacts.add(MavenComponentBag.get().resolveArtifactUsingMavenProjectArtifacts(artifactId));
         }        
     }
 
-    public GraphSubtractionFilter(String... artifactIds) {
-        for (String artifactId : artifactIds) {
-            this.artifacts.add(resolveArtifact(artifactId));
-        }
+    public GraphSubtractionFilter(String... artifactIds) throws IOException {
+        this(Arrays.asList(artifactIds));
     }
 
-    public GraphSubtractionFilter(String artifactId) {
-        this.artifacts.add(resolveArtifact(artifactId));
+    public GraphSubtractionFilter(String artifactId) throws IOException {
+        this.artifacts.add(MavenComponentBag.get().resolveArtifactUsingMavenProjectArtifacts(artifactId));
     }
 
     /**
@@ -77,18 +76,5 @@ public final class GraphSubtractionFilter extends GraphFilter implements GraphVi
 
     public boolean visit(DependencyGraph.Edge edge) {
         return true;
-    }
-
-    private Artifact resolveArtifact(String artifactId) {
-        try {
-            return MavenComponentBag.get()
-                                    .resolveArtifactUsingMavenProjectArtifacts(artifactId,
-                                                                               null,
-                                                                               null,
-                                                                               null,
-                                                                               null);
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
     }
 }
