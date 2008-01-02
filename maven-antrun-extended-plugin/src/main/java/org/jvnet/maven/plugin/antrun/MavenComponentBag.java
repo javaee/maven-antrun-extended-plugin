@@ -20,25 +20,25 @@ package org.jvnet.maven.plugin.antrun;
  */
 
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.artifact.factory.ArtifactFactory;
+import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
+import org.apache.maven.artifact.metadata.ArtifactMetadataRetrievalException;
 import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
+import org.apache.maven.artifact.metadata.ResolutionGroup;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
 import org.apache.maven.artifact.resolver.ArtifactResolver;
+import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.maven.project.MavenProjectHelper;
 
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.apache.maven.artifact.metadata.ArtifactMetadataRetrievalException;
-import org.apache.maven.artifact.metadata.ResolutionGroup;
-import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
-import org.apache.maven.project.MavenProjectBuilder;
 
 /**
  * Exposes maven components to the Ant tasks.
@@ -259,8 +259,16 @@ final class MavenComponentBag {
                 );
         return result;
     }
-    
-    /*
+
+    /**
+     * Works like {@link #resolveArtifactUsingMavenProjectArtifacts(String, String, String, String, String)} but
+     * infers everything else from the artifact ID.
+     */
+    public Artifact resolveArtifactUsingMavenProjectArtifacts(String artifactId) throws IOException {
+        return resolveArtifactUsingMavenProjectArtifacts(artifactId,null,null,null,null);
+    }
+
+    /**
      * This method tries to match a request against artifacts loaded by Maven and
      * exposed through the MavenProject object.
      *
