@@ -13,8 +13,8 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Use this filter to create a subgraph a DependencyGraph. Indicate which artifacts
- * you wish to subtract by passing the artifactId(s) to one of the constructors.
+ * Filter {@link DependencyGraph} by excluding the specified set of artifacts. Any artifacts made
+ * unreachable by this process will be also excluded.
  *
  * @author Paul Sterk
  */
