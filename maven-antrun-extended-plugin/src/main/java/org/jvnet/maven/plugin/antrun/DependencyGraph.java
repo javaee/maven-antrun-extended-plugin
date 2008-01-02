@@ -101,7 +101,7 @@ public final class DependencyGraph {
             Set<Node> reachable = new HashSet<Node>();
 
             if(!nodes.contains(root))
-                throw new IllegalArgumentException("root is not a part of nodes:"+nodes);
+                throw new IllegalArgumentException("root "+root+" is not a part of nodes:"+nodes);
             for (Node n : nodes)
                 this.nodes.put(n.getId(),n);
             for (Edge e : edges) {
@@ -196,6 +196,7 @@ public final class DependencyGraph {
      */
     public DependencyGraph createSubGraph(Node node, GraphVisitor visitor) {
         Set<Node> visited = new HashSet<Node>();
+        Set<Node> nodes = new HashSet<Node>();
         List<Edge> edges = new ArrayList<Edge>();
         Stack<Node> q = new Stack<Node>();
         q.push(node);
@@ -203,6 +204,7 @@ public final class DependencyGraph {
         while(!q.isEmpty()) {
             DependencyGraph.Node n = q.pop();
             if(visitor.visit(n)) {
+                nodes.add(n);
                 for (Edge e : n.getForwardEdges(this)) {
                     if(visitor.visit(e)) {
                         edges.add(e);
@@ -213,7 +215,7 @@ public final class DependencyGraph {
             }
         }
 
-        return new DependencyGraph(node,visited,edges);
+        return new DependencyGraph(node,nodes,edges);
     }
 
     /**
