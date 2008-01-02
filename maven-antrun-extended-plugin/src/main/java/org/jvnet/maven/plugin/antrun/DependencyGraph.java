@@ -262,7 +262,9 @@ public final class DependencyGraph {
                 // system scoped artifacts don't have POM, so the attempt to load it will fail.
                 pom = null;
             else {
-                pom = g.bag.mavenProjectBuilder.buildFromRepository(artifact,
+                pom = g.bag.mavenProjectBuilder.buildFromRepository(
+                        // this create another Artifact instance whose type is 'pom'
+                        g.bag.factory.createProjectArtifact(artifact.getGroupId(),artifact.getArtifactId(), artifact.getVersion()),
                         g.bag.project.getRemoteArtifactRepositories(),
                         g.bag.localRepository);
                 loadDependencies(g);
