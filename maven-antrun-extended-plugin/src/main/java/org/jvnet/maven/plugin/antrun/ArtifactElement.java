@@ -62,4 +62,12 @@ public class ArtifactElement {
     public Artifact createArtifact(MavenComponentBag bag) throws IOException {
         return bag.createArtifactWithClassifier(groupId,artifactId,version,type,classifier);
     }
+
+    /**
+     * Retrurns the ID of this artifact after guessing omitted parameters.
+     * The returned string follows the {@link Artifact#getId()} format.
+     */
+    public String getId(MavenComponentBag bag) throws IOException {
+        return createArtifact(bag).getId();
+    }
 }

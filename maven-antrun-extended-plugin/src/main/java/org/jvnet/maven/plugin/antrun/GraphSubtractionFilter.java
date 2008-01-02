@@ -19,14 +19,18 @@ import java.util.Set;
  * @author Paul Sterk
  */
 public final class GraphSubtractionFilter extends GraphFilter implements GraphVisitor {
-    private final Set<Artifact> artifacts = new HashSet<Artifact>();
+    /**
+     * IDs of the artifacts to exclude. "groupId:artifactId:classifier".
+     * These three are sufficient to identify an artifact uniquely within the context of single project
+     * and its dependency.
+     */
+    private final Set<String> ids = new HashSet<String>();
 
     private final List<ArtifactElement> artifactElements = new ArrayList<ArtifactElement>();
 
     public GraphSubtractionFilter(Collection<String> artifactIds) throws IOException {
-        for (String artifactId : artifactIds) {
-            this.artifacts.add(MavenComponentBag.get().resolveArtifactUsingMavenProjectArtifacts(artifactId));
-        }        
+        for (String artifactId : artifactIds)
+            addArtifactId(artifactId);
     }
 
     public GraphSubtractionFilter(String... artifactIds) throws IOException {
@@ -34,7 +38,7 @@ public final class GraphSubtractionFilter extends GraphFilter implements GraphVi
     }
 
     public GraphSubtractionFilter(String artifactId) throws IOException {
-        this.artifacts.add(MavenComponentBag.get().resolveArtifactUsingMavenProjectArtifacts(artifactId));
+        addArtifactId(artifactId);
     }
 
     /**
@@ -44,10 +48,22 @@ public final class GraphSubtractionFilter extends GraphFilter implements GraphVi
     }
 
     /**
+     * Adds the artifact ID to {@link #ids}. Note that this requires us to infer other parameters like
+     * groupId, version, etc.
+     */
+    private void addArtifactId(String artifactId) throws IOException {
+        addArtifact(MavenComponentBag.get().resolveArtifactUsingMavenProjectArtifacts(artifactId));
+    }
+
+    private void addArtifact(Artifact a) {
+        ids.add(a.getGroupId()+':'+a.getArtifactId()+':'+a.getClassifier());
+    }
+
+    /**
      * Nested &lt;artifact> element can be used to specify what artifacts to exclude.
      */
     public void addConfiguredArtifact(ArtifactElement a) {
-        // can't resolve this to artifact yet.
+        // can't resolve this to artifact yet, because we don't have MavenComponentBag here.
         artifactElements.add(a);
     }
 
@@ -62,8 +78,8 @@ public final class GraphSubtractionFilter extends GraphFilter implements GraphVi
     public boolean visit(DependencyGraph.Node node) {
         // at this point we have a valid MavenComponentBag to perform this resolution.
         try {
-            for (ArtifactElement a : artifactElements)
-                artifacts.add(a.createArtifact(MavenComponentBag.get()));
+            for (ArtifactElement ae : artifactElements)
+                addArtifact(ae.createArtifact(MavenComponentBag.get()));
             artifactElements.clear();
         } catch (IOException e) {
             throw new BuildException(e);
@@ -71,7 +87,7 @@ public final class GraphSubtractionFilter extends GraphFilter implements GraphVi
 
         // If the artifact matches an artifact in the artifacts Set, do not 
         // include in the subgraph. Indicate this by returning 'false'.
-        return !artifacts.contains(node.getProject().getArtifact());
+        return !ids.contains(node.getId());
     }
 
     public boolean visit(DependencyGraph.Edge edge) {
