@@ -1,13 +1,8 @@
 package org.jvnet.maven.plugin.antrun;
 
 
-import org.apache.tools.ant.BuildException;
-
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Use this filter to create a retention set from a DependencyGraph. Indicate 
@@ -17,37 +12,32 @@ import java.io.IOException;
  * @author Paul Sterk
  */
 public final class GraphRetentionSetFilter extends GraphFilter {
-    private final Collection<String> artifactIds = new HashSet<String>();
+    private final List<ArtifactElement> artifactElements = new ArrayList<ArtifactElement>();
 
-    public GraphRetentionSetFilter(Collection<String> artifactIds) {
-        this.artifactIds.addAll(artifactIds);
-    }
-
-    public GraphRetentionSetFilter(String... artifactIds) {
-        this(Arrays.asList(artifactIds));
-    }
-
-    public GraphRetentionSetFilter() {
+    /**
+     * Nested &lt;artifact> element can be used to specify what artifacts to exclude.
+     */
+    public void addConfiguredArtifact(ArtifactElement a) {
+        // can't resolve this to artifact yet, because we don't have MavenComponentBag here.
+        artifactElements.add(a);
     }
 
     public DependencyGraph process() {
-        try {
-            // Step 1. Subtract out all the artifacts specified in the artifactIds
-            // collection by doing set subtraction
-            ExcludeArtifactsTransitivelyFilter sbf = new ExcludeArtifactsTransitivelyFilter(artifactIds);
-            DependencyGraph base = evaluateChild();
+        // Step 1. Subtract out all the artifacts specified in the artifactIds
+        // collection by doing set subtraction
+        ExcludeArtifactsTransitivelyFilter sbf = new ExcludeArtifactsTransitivelyFilter();
+        for (ArtifactElement ae : artifactElements)
+            sbf.addConfiguredArtifact(ae);
+        DependencyGraph base = evaluateChild();
 
-            final DependencyGraph subtractionSet = base.createSubGraph(sbf);
+        final DependencyGraph subtractionSet = base.createSubGraph(sbf);
 
-            // Step 2. Create the retention set by subtracting the artifacts in the
-            // subtractionSet created in Step 1 from the original dependencyGraph set
-            return base.createSubGraph(new DefaultGraphVisitor() {
-                public boolean visit(DependencyGraph.Node node) {
-                    return !subtractionSet.contains(node); 
-                }
-            });
-        } catch (IOException e) {
-            throw new BuildException("Failed to resolve artifacts",e);
-        }
+        // Step 2. Create the retention set by subtracting the artifacts in the
+        // subtractionSet created in Step 1 from the original dependencyGraph set
+        return base.createSubGraph(new DefaultGraphVisitor() {
+            public boolean visit(DependencyGraph.Node node) {
+                return !subtractionSet.contains(node);
+            }
+        });
     }
 }
