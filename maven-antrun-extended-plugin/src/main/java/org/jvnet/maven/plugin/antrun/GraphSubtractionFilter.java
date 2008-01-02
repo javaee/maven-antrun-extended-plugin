@@ -72,33 +72,13 @@ public final class GraphSubtractionFilter extends GraphFilter implements GraphVi
 
         // If the artifact matches an artifact in the artifacts Set, do not 
         // include in the subgraph. Indicate this by returning 'false'.
-        return ! include(node.getProject().getArtifact());        
+        return !artifacts.contains(node.getProject().getArtifact());
     }
 
     public boolean visit(DependencyGraph.Edge edge) {
         return true;
     }
 
-/****************************************************************************
- * private methods
- ****************************************************************************/
-    /*
-     * Leverage the @link Comparable interface implementation in the Artifact 
-     * class to determine if Artifacts are equal
-     */
-    private boolean include(Artifact a1) {
-        boolean include = true;
-        for (Artifact artifact : this.artifacts) {
-            if (artifact.compareTo(a1) == 0) {
-                // A 'zero' means that the objects are equal unless otherwise
-                // documented in the Artifact interface
-                include = false;
-                break;
-            }
-        }
-        return include;
-    }
-    
     private Artifact resolveArtifact(String artifactId) {
         try {
             return MavenComponentBag.get()
