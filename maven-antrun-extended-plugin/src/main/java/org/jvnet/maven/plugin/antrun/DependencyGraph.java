@@ -94,12 +94,14 @@ public final class DependencyGraph {
      * to construct a subset reliably.
      */
     private DependencyGraph(Node root, Collection<Node> nodes, Collection<Edge> edges) {
+        if(nodes.isEmpty())     root = null; // graph is empty
+
         this.root = root;
         if(root!=null) {
             Set<Node> reachable = new HashSet<Node>();
 
             if(!nodes.contains(root))
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException("root is not a part of nodes:"+nodes);
             for (Node n : nodes)
                 this.nodes.put(n.getId(),n);
             for (Edge e : edges) {

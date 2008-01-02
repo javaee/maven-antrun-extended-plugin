@@ -28,6 +28,7 @@ import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Target;
 import org.apache.tools.ant.taskdefs.Taskdef;
+import org.apache.tools.ant.taskdefs.Typedef;
 
 import java.beans.Introspector;
 import java.io.File;
@@ -203,29 +204,46 @@ public class AntRunMojo
     protected void configureProject(Project antProject) {
         // define all tasks
         for (Class task : TASKS) {
-            String taskName = task.getSimpleName();
-            if(taskName.endsWith("Task")) // chop off 'Task'
-                taskName = taskName.substring(0,taskName.length()-4);
-            taskName = Introspector.decapitalize(taskName);
-
-            Taskdef def = new Taskdef();
-            def.setName(taskName);
-            def.setClassname(task.getName());
-            def.setProject(antProject);
-            def.execute();
+            typeDef(antProject, task, new Taskdef(), inferName(task, "Task"));
         }
 
+        // define all filters
+        for (Class filter : FILTERS) {
+            typeDef(antProject, filter, new Typedef(), inferName(filter, "Filter"));
+        }
+        
         // expose basic properties
         antProject.setProperty("artifactId",project.getArtifactId());
         antProject.setProperty("groupId",project.getGroupId());
         antProject.setProperty("version",project.getVersion());
         antProject.setProperty("packaging",project.getPackaging());
-        // TODO: we can add more
+    }
+
+    private void typeDef(Project antProject, Class task, Typedef def, String name) {
+        def.setName(name);
+        def.setClassname(task.getName());
+        def.setProject(antProject);
+        def.execute();
+    }
+
+    private String inferName(Class task, String suffix) {
+        String taskName = task.getSimpleName();
+        if(taskName.endsWith(suffix)) // chop off suffix
+            taskName = taskName.substring(0,taskName.length()-suffix.length());
+        taskName = Introspector.decapitalize(taskName);
+        return taskName;
     }
 
     private static final Class[] TASKS = new Class[] {
         ResolveArtifactTask.class,
         ResolveAllTask.class,
         AttachArtifactTask.class
+    };
+
+    private static final Class[] FILTERS = new Class[] {
+        GraphRetentionSetFilter.class,
+        GraphSubtractionFilter.class,
+        PackagingFilter.class,
+        ScopeFilter.class
     };
 }

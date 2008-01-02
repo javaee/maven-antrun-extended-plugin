@@ -1,15 +1,19 @@
 package org.jvnet.maven.plugin.antrun;
 
+import org.apache.maven.artifact.resolver.AbstractArtifactResolutionException;
+import org.apache.maven.project.ProjectBuildingException;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
+import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.Copy;
-import org.apache.tools.ant.taskdefs.condition.Condition;
-import org.apache.tools.ant.taskdefs.condition.ConditionBase;
 import org.apache.tools.ant.types.Path;
 import org.jvnet.maven.plugin.antrun.DependencyGraph.Node;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Transitively resolve dependencies, perform some filtering, and deliver the resulting
@@ -18,13 +22,14 @@ import java.util.Collection;
  * @author Kohsuke Kawaguchi
  * @author Paul Sterk
  */
-public class ResolveAllTask extends ConditionBase {
+public class ResolveAllTask extends Task {
     
     private File todir;
     
     private String pathId;
     
     private String groupId,artifactId,version,type="jar",classifier;
+    private final List<GraphFilter> children = new ArrayList<GraphFilter>();
 
     public void setGroupId(String groupId) {
         this.groupId = groupId;
@@ -54,13 +59,20 @@ public class ResolveAllTask extends ConditionBase {
     public void setPathId(String pathId) {
         this.pathId = pathId;
     }
-    
+
+    /**
+     * Adds a {@link GraphFilter} child. Ant will invoke this for each child element given in build script.
+     */
+    public void add(GraphFilter child) {
+        children.add(child);
+    }
+
     public void execute() throws BuildException {  
         log("Starting ResolveAllTasks.execute ", Project.MSG_DEBUG);
         try {
             MavenComponentBag w = MavenComponentBag.get();
 
-            final DependencyGraph g;
+            DependencyGraph g;
 
             if(groupId==null && artifactId==null && version==null) {
                 // if no clue is given whatsoever, use all the project dependencies
@@ -72,30 +84,20 @@ public class ResolveAllTask extends ConditionBase {
             }
 
             log("Graph="+g,Project.MSG_DEBUG);
-//
-//            final Condition c = getCondition();
-//
-//            // visit the graph and determine the subset of artifacts
-//            Set<Node> nodes = g.createSubGraph(new GraphVisitor() {
-//                public boolean visit(Edge edge) {
-//                    GraphVisitingCondition.setCurrent(edge);
-//                    return c.eval();
-//                }
-//
-//                public boolean visit(Node node) {
-//                    GraphVisitingCondition.setCurrent(node);
-//                    return c.eval();
-//                }
-//            });
-//
-//            // further filter out nodes
-//            for (Iterator<Node> itr = nodes.iterator(); itr.hasNext();) {
-//                GraphVisitingCondition.setCurrentFilterNode(itr.next());
-//                if(!c.eval())
-//                    itr.remove();
-//            }
 
-            // TODO: apply transformation to g
+            if(children.size()>1)
+                throw new BuildException("Too many filters are given");
+
+            if(!children.isEmpty()) {
+                // apply transformation to g
+                final DependencyGraph old = GraphFilter.CURRENT_INPUT.get();
+                GraphFilter.CURRENT_INPUT.set(g);
+                try {
+                    g = children.get(0).process();
+                } finally {
+                    GraphFilter.CURRENT_INPUT.set(old);
+                }
+            }
 
             Collection<Node> nodes = g.getAllNodes();
             log("Filtered down to "+ nodes.size()+" artifact(s)",Project.MSG_DEBUG);
@@ -127,31 +129,14 @@ public class ResolveAllTask extends ConditionBase {
                     }
                 }
             }
-
-
-        } catch (Throwable t) {
-            throw new BuildException(t);
+        } catch (AbstractArtifactResolutionException e) {
+            throw new BuildException(e);
+        } catch (IOException e) {
+            throw new BuildException(e);
+        } catch (ProjectBuildingException e) {
+            throw new BuildException(e);
         }
+        
         log("Exiting ResolveAllTasks.execute ", Project.MSG_DEBUG);
-    }
-
-    /**
-     * Determines the configured condition.
-     */
-    private Condition getCondition() {
-        if (countConditions() > 1) {
-            throw new BuildException("You must not nest more than one "
-                + "condition into <condition>");
-        }
-        if (countConditions()==1) {
-            return (Condition) getConditions().nextElement();
-        }
-
-        // no condition given, meaning all artifacts.
-        return new Condition() {
-            public boolean eval() throws BuildException {
-                return true;
-            }
-        };
     }
 }

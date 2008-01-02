@@ -1,28 +1,49 @@
 package org.jvnet.maven.plugin.antrun;
 
-/*
- * Copyright 2005-2006 The Apache Software Foundation.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+import org.apache.tools.ant.BuildException;
+
+import java.util.List;
+import java.util.ArrayList;
 
 /**
- * This interface provides methods for filtering a DependencyGraph
+ * Filter a {@link DependencyGraph} based on configuration by Ant.
  * 
  * @author psterk
  */
-public interface GraphFilter {
+public abstract class GraphFilter {
+    protected final List<GraphFilter> children = new ArrayList<GraphFilter>();
 
-    public DependencyGraph process(DependencyGraph dependGraph);
-    
+
+    public abstract DependencyGraph process();
+
+    /**
+     * Adds another child. Ant will invoke this for each child element given in build script.
+     */
+    public void add(GraphFilter child) {
+        children.add(child);
+    }
+
+    /**
+     * Evaluate the n-th child {@link GraphFilter}. If omitted, it returns the input graph,
+     * so that the full graph can be given as an input implicitly. Whether this defaulting
+     * is a good idea or not, it's hard to say.
+     */
+    protected DependencyGraph evaluateChild(int index) {
+        if(children.size()<=index)
+            return CURRENT_INPUT.get();
+        else
+            return children.get(index).process();
+    }
+
+    /**
+     * Short for {@code evaluateChild(0)}, for those fitlers that only have one child.
+     */
+    protected final DependencyGraph evaluateChild() {
+        if(children.size()>1)
+            throw new BuildException("Too many children in "+getClass().getName());
+        return evaluateChild(0);
+    }
+
+    /*package*/ static final ThreadLocal<DependencyGraph> CURRENT_INPUT = new ThreadLocal<DependencyGraph>();
+
 }

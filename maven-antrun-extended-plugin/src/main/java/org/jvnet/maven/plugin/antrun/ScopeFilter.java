@@ -11,7 +11,7 @@ import java.util.Collections;
  * @author Kohsuke Kawaguchi
  * @author Paul Sterk
  */
-public final class ScopeFilter extends GraphVisitor implements GraphFilter {
+public final class ScopeFilter extends GraphFilter implements GraphVisitor {
     private final Collection<String> scopes;
 
     public ScopeFilter(Collection<String> scopes) {
@@ -26,14 +26,17 @@ public final class ScopeFilter extends GraphVisitor implements GraphFilter {
         this.scopes = Collections.singleton(scope);
     }
 
-    public DependencyGraph process(DependencyGraph dependencyGraph) {
+    public DependencyGraph process() {
         // Create a subgraph of the dependencyGraph by using this class as a 
         // GraphVisitor.
-        return dependencyGraph.createSubGraph(this);
+        return evaluateChild().createSubGraph(this);
     }    
     
-    @Override
     public boolean visit(DependencyGraph.Edge edge) {
         return scopes.contains(edge.scope);
+    }
+
+    public boolean visit(DependencyGraph.Node node) {
+        return true;
     }
 }
