@@ -16,12 +16,6 @@ package org.jvnet.maven.plugin.antrun;
  * limitations under the License.
  */
 
-import java.io.File;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
@@ -29,6 +23,12 @@ import org.apache.tools.ant.PropertyHelper;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluationException;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluator;
 import org.codehaus.plexus.util.introspection.ReflectionValueExtractor;
+
+import java.io.File;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Makes the ${expressions} used in Maven available to Ant as properties.

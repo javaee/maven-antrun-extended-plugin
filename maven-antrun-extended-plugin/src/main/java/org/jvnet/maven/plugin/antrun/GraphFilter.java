@@ -2,8 +2,8 @@ package org.jvnet.maven.plugin.antrun;
 
 import org.apache.tools.ant.BuildException;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Filter a {@link DependencyGraph} based on configuration by Ant.

@@ -16,17 +16,10 @@ package org.jvnet.maven.plugin.antrun;
  * limitations under the License.
  */
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.jvnet.maven.plugin.antrun.components.AntTargetConverter;
 import org.apache.maven.project.MavenProject;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DefaultLogger;
@@ -36,6 +29,13 @@ import org.apache.tools.ant.Target;
 import org.apache.tools.ant.types.Path;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluator;
 import org.codehaus.plexus.util.StringUtils;
+import org.jvnet.maven.plugin.antrun.components.AntTargetConverter;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Abstract class for the Antrun plugin
