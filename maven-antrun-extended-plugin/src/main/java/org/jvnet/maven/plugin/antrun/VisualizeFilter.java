@@ -33,6 +33,10 @@ public class VisualizeFilter extends GraphFilter {
 
         try {
             GraphVizVisualizer viz = GraphVizVisualizer.createPng(output);
+
+            for (Subgraph subGraph : subGraphs)
+                viz.addColoredSubgraph( subGraph.process(), subGraph.color);
+
             g.accept(viz);
             viz.close();
         } catch (IOException e) {
@@ -48,7 +52,7 @@ public class VisualizeFilter extends GraphFilter {
     /**
      * Nested &lt;subgraph> element.
      * <p>
-     * Each takes nested filtering specifier.
+     * Each takes nested filtering specifier, and those subgraphs will be drawn in a different color.
      */
     public static final class Subgraph extends GraphFilter {
         private String color;
