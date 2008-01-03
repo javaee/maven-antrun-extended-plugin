@@ -245,6 +245,23 @@ public final class DependencyGraph {
         return new DependencyGraph(root,nodes,edges);
     }
 
+    public String toString() {
+        StringBuilder buf = new StringBuilder();
+        buf.append("DependencyGraph[root=").append(root).append(",\n");
+        buf.append("  nodes=[\n");
+        for (Node node : nodes.values())
+            buf.append("    ").append(node).append('\n');
+        buf.append("  ]\n");
+        buf.append("  edges=[\n");
+        for (Map.Entry<Node, List<Edge>> n : forwardEdges.entrySet()) {
+            for (Edge e : n.getValue()) {
+                buf.append("    ").append(e).append('\n');
+            }
+        }
+        buf.append("  ]\n]");
+        return buf.toString();
+    }
+
     /**
      * Node, which represents an artifact.
      *

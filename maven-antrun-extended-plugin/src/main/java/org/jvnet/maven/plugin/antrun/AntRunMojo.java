@@ -244,6 +244,7 @@ public class AntRunMojo
         GraphRetentionSetFilter.class,
         ExcludeArtifactsTransitivelyFilter.class,
         PackagingFilter.class,
-        ScopeFilter.class
+        ScopeFilter.class,
+        DumpGraphFilter.class
     };
 }
