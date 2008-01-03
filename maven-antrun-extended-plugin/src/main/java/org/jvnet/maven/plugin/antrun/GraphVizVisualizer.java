@@ -19,6 +19,8 @@ public class GraphVizVisualizer implements GraphVisitor {
 
     private final PrintWriter out;
 
+    private final Map<Object/*Node|Edge*/,String> colors = new HashMap<Object,String>();
+
     /**
      * Unique IDs given to GraphViz for each node.
      */
@@ -33,6 +35,23 @@ public class GraphVizVisualizer implements GraphVisitor {
         this(new PrintWriter(out));
     }
 
+    /**
+     * Paint all edges and nodes that belong to the given subgraph by using the specified color.
+     */
+    public void addColoredSubgraph(DependencyGraph g, final String color) {
+        g.accept(new GraphVisitor() {
+            public boolean visit(DependencyGraph.Edge edge) {
+                colors.put(edge,color);
+                return true;
+            }
+
+            public boolean visit(DependencyGraph.Node node) {
+                colors.put(node,color);
+                return true;
+            }
+        });
+    }
+
     public void close() {
         out.println("}");
         out.close();
@@ -45,6 +64,7 @@ public class GraphVizVisualizer implements GraphVisitor {
             attrs.put("label",edge.scope);
         if(edge.optional)
             attrs.put("style","dotted");
+        attrs.put("color",colors.get(edge));
 
         out.printf("%s -> %s ", id(edge.src), id(edge.dst));
         writeAttributes(attrs);
@@ -52,10 +72,11 @@ public class GraphVizVisualizer implements GraphVisitor {
     }
 
     public boolean visit(DependencyGraph.Node node) {
-        out.print(id(node)+' ');
-
         Map<String,String> attrs = new HashMap<String, String>();
         attrs.put("label",node.groupId+':'+node.artifactId);
+        attrs.put("color",colors.get(node));
+
+        out.print(id(node)+' ');
         writeAttributes(attrs);
         return true;
     }
