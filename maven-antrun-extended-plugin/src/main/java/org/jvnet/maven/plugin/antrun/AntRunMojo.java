@@ -247,6 +247,7 @@ public class AntRunMojo
         ScopeFilter.class,
         DumpGraphFilter.class,
         SubtractFilter.class,
-        SubGraphFilter.class
+        SubGraphFilter.class,
+        FullGraphFilter.class
     };
 }
