@@ -200,6 +200,13 @@ public final class DependencyGraph {
     }
 
     /**
+     * Creates a full subgraph rooted at the given node.
+     */
+    public DependencyGraph createSubGraph(Node root) {
+        return createSubGraph(root,new DefaultGraphVisitor());
+    }
+
+    /**
      * Visits the graph started at the given node, and creates a sub-graph
      * from visited nodes and edges.
      *
