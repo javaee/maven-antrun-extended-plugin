@@ -105,9 +105,11 @@ public final class DependencyGraph {
             for (Node n : nodes)
                 this.nodes.put(n.getId(),n);
             for (Edge e : edges) {
-                e.addEdge(forwardEdges,e.src);
-                e.addEdge(backwardEdges,e.dst);
-                reachable.add(e.dst);
+                if(contains(e.src) && contains(e.dst)) {
+                    e.addEdge(forwardEdges,e.src);
+                    e.addEdge(backwardEdges,e.dst);
+                    reachable.add(e.dst);
+                }
             }
 
             // some nodes were unreachable
