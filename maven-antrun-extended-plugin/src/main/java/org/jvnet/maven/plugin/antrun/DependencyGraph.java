@@ -469,6 +469,7 @@ public final class DependencyGraph {
         public Edge(DependencyGraph g, Node src, Node dst, String scope, boolean optional) {
             this.src = src;
             this.dst = dst;
+            if(scope==null) scope="compile";
             this.scope = scope;
             this.optional = optional;
             addEdge(g.forwardEdges,src);
