@@ -237,7 +237,8 @@ public class AntRunMojo
     private static final Class[] TASKS = new Class[] {
         ResolveArtifactTask.class,
         ResolveAllTask.class,
-        AttachArtifactTask.class
+        AttachArtifactTask.class,
+        GraphDefTask.class
     };
 
     private static final Class[] FILTERS = new Class[] {
@@ -249,6 +250,7 @@ public class AntRunMojo
         SubtractFilter.class,
         SubGraphFilter.class,
         FullGraphFilter.class,
-        VisualizeFilter.class
+        VisualizeFilter.class,
+        GraphRefFilter.class
     };
 }
