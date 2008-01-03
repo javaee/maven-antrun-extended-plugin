@@ -4,6 +4,8 @@ package org.jvnet.maven.plugin.antrun;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Set;
+import java.util.HashSet;
 
 /**
  * Filter out a {@link DependencyGraph} by only traversing the given packaging.
@@ -11,18 +13,22 @@ import java.util.Collections;
  * @author Paul Sterk
  */
 public final class PackagingFilter extends GraphFilter implements GraphVisitor {
-    private final Collection<String> packagings;
+    private final Set<String> packagings = new HashSet<String>();
 
     public PackagingFilter(Collection<String> packagings) {
-        this.packagings = packagings;
+        this.packagings.addAll(packagings);
     }
 
     public PackagingFilter(String... packagings) {
-        this.packagings = Arrays.asList(packagings);
+        this(Arrays.asList(packagings));
     }
 
-    public PackagingFilter(String packaging) {
-        this.packagings = Collections.singleton(packaging);
+    // needed for Ant
+    public PackagingFilter() {
+    }
+
+    public void setValue(String v) {
+        packagings.add(v);
     }
 
     public DependencyGraph process() {
