@@ -442,6 +442,10 @@ public final class DependencyGraph {
             List<Edge> l = edgeSet.get(index);
             if(l==null)
                 edgeSet.put(index,l=new ArrayList<Edge>());
+            for (Edge e : l) {
+                if(e.src==this.src && e.dst==this.dst)
+                    return; // duplicate
+            }
             l.add(this);
         }
 
