@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import java.util.TreeMap;
 
 /**
  * Graph of dependencies among Maven artifacts.
@@ -61,7 +62,7 @@ public final class DependencyGraph {
     /**
      * All {@link Node}s keyed by "groupId:artifactId:classifier"
      */
-    private final Map<String,Node> nodes = new HashMap<String, Node>();
+    private final Map<String,Node> nodes = new TreeMap<String,Node>();
 
     /**
      * Forward edges.
