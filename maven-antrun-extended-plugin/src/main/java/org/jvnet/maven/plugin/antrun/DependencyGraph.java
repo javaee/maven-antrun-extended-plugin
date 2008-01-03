@@ -99,6 +99,7 @@ public final class DependencyGraph {
         this.root = root;
         if(root!=null) {
             Set<Node> reachable = new HashSet<Node>();
+            reachable.add(root);    // root is always reachable
 
             if(!nodes.contains(root))
                 throw new IllegalArgumentException("root "+root+" is not a part of nodes:"+nodes);
