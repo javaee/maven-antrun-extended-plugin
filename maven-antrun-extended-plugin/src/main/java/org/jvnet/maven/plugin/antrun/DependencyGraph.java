@@ -420,6 +420,29 @@ public final class DependencyGraph {
         public String getId() {
             return groupId+':'+artifactId+':'+classifier;
         }
+
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            Node node = (Node) o;
+
+            if (!artifactId.equals(node.artifactId)) return false;
+            if (classifier != null ? !classifier.equals(node.classifier) : node.classifier != null) return false;
+            if (!groupId.equals(node.groupId)) return false;
+            if (version != null ? !version.equals(node.version) : node.version != null) return false;
+
+            return true;
+        }
+
+        public int hashCode() {
+            int result;
+            result = groupId.hashCode();
+            result = 31 * result + artifactId.hashCode();
+            result = 31 * result + (version != null ? version.hashCode() : 0);
+            result = 31 * result + (classifier != null ? classifier.hashCode() : 0);
+            return result;
+        }
     }
 
     public static final class Edge {
