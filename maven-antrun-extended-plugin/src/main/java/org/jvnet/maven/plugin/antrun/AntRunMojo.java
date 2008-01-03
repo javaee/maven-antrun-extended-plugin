@@ -248,6 +248,7 @@ public class AntRunMojo
         DumpGraphFilter.class,
         SubtractFilter.class,
         SubGraphFilter.class,
-        FullGraphFilter.class
+        FullGraphFilter.class,
+        VisualizeFilter.class
     };
 }

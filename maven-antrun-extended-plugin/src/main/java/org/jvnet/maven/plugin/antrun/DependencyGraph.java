@@ -283,7 +283,7 @@ public final class DependencyGraph {
          * If {@link #pom} is non-null, this information is redundant, but it needs to be
          * kept separately for those rare cases where pom==null.
          */
-        private final String groupId,artifactId,version,classifier;
+        public final String groupId,artifactId,version,classifier;
 
         private final MavenProject pom;
         private /*final*/ File artifactFile;
