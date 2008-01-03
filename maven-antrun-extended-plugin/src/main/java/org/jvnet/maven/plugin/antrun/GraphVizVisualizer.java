@@ -39,18 +39,40 @@ public class GraphVizVisualizer implements GraphVisitor {
     }
 
     public boolean visit(DependencyGraph.Edge edge) {
-        String label="";
-        if(!edge.scope.equals("compile"))
-            label = edge.scope;
+        Map<String,String> attrs = new HashMap<String, String>();
 
-        out.printf("%s -> %s [label=\"%s\",style=%s];", id(edge.src), id(edge.dst), label,
-            edge.optional?"dotted":"filled");
+        if(!edge.scope.equals("compile"))   // most of dependencies are compile, so skip them for brevity
+            attrs.put("label",edge.scope);
+        if(edge.optional)
+            attrs.put("style","dotted");
+
+        out.printf("%s -> %s ", id(edge.src), id(edge.dst));
+        writeAttributes(attrs);
         return true;
     }
 
     public boolean visit(DependencyGraph.Node node) {
-        out.printf("%s [label=\"%s\"];", id(node), node.groupId+':'+node.artifactId);
+        out.print(id(node)+' ');
+
+        Map<String,String> attrs = new HashMap<String, String>();
+        attrs.put("label",node.groupId+':'+node.artifactId);
+        writeAttributes(attrs);
         return true;
+    }
+
+    private void writeAttributes(Map<String,String> attributes) {
+        out.print('[');
+        boolean first=true;
+        for (Map.Entry<String,String> e : attributes.entrySet()) {
+            if(e.getValue()==null)  continue;   // skip
+
+            out.printf("%s=\"%s\"",e.getKey(),e.getValue());
+            if(!first)
+                out.print(',');
+            else
+                first = false;
+        }
+        out.println("];");
     }
 
     private String id(DependencyGraph.Node n) {

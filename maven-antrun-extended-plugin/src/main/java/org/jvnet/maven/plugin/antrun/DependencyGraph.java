@@ -200,6 +200,13 @@ public final class DependencyGraph {
     }
 
     /**
+     * Accepts the visitor. Simply an alias for {@link #createSubGraph(GraphVisitor)}.
+     */
+    public void accept(GraphVisitor visitor) {
+        createSubGraph(visitor);
+    }
+
+    /**
      * Creates a full subgraph rooted at the given node.
      */
     public DependencyGraph createSubGraph(Node root) {
