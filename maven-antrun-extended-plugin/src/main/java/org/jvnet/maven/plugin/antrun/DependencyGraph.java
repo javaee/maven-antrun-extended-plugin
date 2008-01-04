@@ -481,7 +481,7 @@ public final class DependencyGraph {
             if(l==null)
                 edgeSet.put(index,l=new ArrayList<Edge>());
             for (Edge e : l) {
-                if(e.src==this.src && e.dst==this.dst)
+                if(e.src.equals(this.src) && e.dst.equals(this.dst))
                     return; // duplicate
             }
             l.add(this);
@@ -494,6 +494,22 @@ public final class DependencyGraph {
                 buf.append("/optional");
             buf.append(")-->").append(dst);
             return buf.toString();            
+        }
+
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            Edge that = (Edge) o;
+
+            return dst.equals(that.dst) && src.equals(that.src);
+        }
+
+        public int hashCode() {
+            int result;
+            result = src.hashCode();
+            result = 31 * result + dst.hashCode();
+            return result;
         }
     }
 }
