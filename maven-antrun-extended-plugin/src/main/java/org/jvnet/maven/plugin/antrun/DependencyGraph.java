@@ -473,7 +473,7 @@ public final class DependencyGraph {
             this.scope = scope;
             this.optional = optional;
             addEdge(g.forwardEdges,src);
-            addEdge(g.forwardEdges,dst);
+            addEdge(g.backwardEdges,dst);
         }
 
         private void addEdge(Map<Node, List<Edge>> edgeSet, Node index) {
