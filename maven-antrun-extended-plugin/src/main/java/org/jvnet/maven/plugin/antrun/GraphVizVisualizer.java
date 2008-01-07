@@ -65,6 +65,8 @@ public class GraphVizVisualizer implements GraphVisitor {
         if(edge.optional)
             attrs.put("style","dotted");
         attrs.put("color",colors.get(edge));
+        if(edge.src.groupId.equals(edge.dst.groupId))
+            attrs.put("weight","10");
 
         out.printf("%s -> %s ", id(edge.src), id(edge.dst));
         writeAttributes(attrs);
