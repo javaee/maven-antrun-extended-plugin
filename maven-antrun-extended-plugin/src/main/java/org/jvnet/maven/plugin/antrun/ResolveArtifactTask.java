@@ -15,9 +15,10 @@ import java.io.File;
  * @author Kohsuke Kawaguchi
  */
 public class ResolveArtifactTask extends Task {
+    // properties of artifact.
+    private String groupId,artifactId,version,type,classifier;
 
-    private String property,groupId,artifactId,version,type,classifier;
-
+    private String property;
     private File tofile,todir;
 
     public void setProperty(String property) {
