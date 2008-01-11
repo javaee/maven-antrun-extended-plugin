@@ -316,6 +316,12 @@ public final class DependencyGraph {
         }
 
         private void checkArtifact(Artifact artifact, MavenComponentBag bag) throws ArtifactResolutionException, ArtifactNotFoundException {
+            if(bag.project.getArtifact()==artifact) {
+                // our own module. Trying to resolve this in the usual way is most likely to fail,
+                // so use what we have, if any.
+                artifactFile =artifact.getFile();
+                return;
+            }
             bag.resolveArtifact(artifact);
             artifactFile = artifact.getFile();
             if(artifactFile==null)
@@ -354,7 +360,9 @@ public final class DependencyGraph {
          * Gets the artifact file, like a jar.
          *
          * @return
-         *      for system-scoped artifacts, this may null.
+         *      for system-scoped artifacts, this may null. If this node represents the current module
+         *      being built, this field may or may not be null, depending on whether the artifact is
+         *      already created in the current build or not.
          *      For all the other modules, this is never null.
          */
         public File getArtifactFile() {
