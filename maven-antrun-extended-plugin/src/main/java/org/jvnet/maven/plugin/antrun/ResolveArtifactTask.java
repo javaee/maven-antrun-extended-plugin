@@ -11,9 +11,6 @@ import java.io.File;
 /**
  * Ant task that resolves an artifact through Maven.
  *
- * TODO: support more convenient syntax
- * TODO: resolve dependency transitively.
- * 
  * @author Paul Sterk
  * @author Kohsuke Kawaguchi
  */
@@ -56,11 +53,11 @@ public class ResolveArtifactTask extends Task {
     }
 
     /**
-     * The file name to copy the artifact to.
+     * The directory name to copy the artifact to.
      * Optional.
      */
     public void setTodir(File target) {
-        this.tofile = target;
+        this.todir = target;
     }
 
     public void execute() throws BuildException {
