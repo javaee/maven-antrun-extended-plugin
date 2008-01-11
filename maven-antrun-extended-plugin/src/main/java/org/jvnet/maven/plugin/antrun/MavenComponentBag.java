@@ -312,6 +312,13 @@ final class MavenComponentBag {
      * Obtains/downloads the artifact file by using the current set of repositories.
      */
     public void resolveArtifact(Artifact artifact) throws ArtifactResolutionException, ArtifactNotFoundException {
-        resolver.resolve(artifact,remoteRepositories,localRepository);
+        try {
+            resolver.resolve(artifact,remoteRepositories,localRepository);
+        } catch (ArtifactResolutionException e) {
+            // these pointless catch blocks are convenient for setting breakpoint 
+            throw e;
+        } catch (ArtifactNotFoundException e) {
+            throw e;
+        }
     }
 }
