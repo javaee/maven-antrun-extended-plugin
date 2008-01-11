@@ -19,7 +19,7 @@ import java.io.File;
  */
 public class ResolveArtifactTask extends Task {
 
-    private String property,groupId,artifactId,version,type="jar",classifier;
+    private String property,groupId,artifactId,version,type,classifier;
 
     private File tofile,todir;
 
