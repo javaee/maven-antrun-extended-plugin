@@ -57,9 +57,14 @@
         <scope>runtime</scope>
     </dependency>
     <dependency>
-        <groupId>org.apache.ant</groupId>
+        <groupId>ant</groupId>
         <artifactId>ant</artifactId>
-        <version>1.7.0</version>
+        <!--
+          Ant 1.7 causes http://www.nabble.com/Another-V3-build-error-after-update-tt14721686.html
+          See http://jira.codehaus.org/browse/MANTRUN-68 for the cause. In the mean time,
+          falling back to 1.6.5.
+        -->
+        <version>1.6.5</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
