@@ -1,6 +1,8 @@
 package org.jvnet.maven.plugin.antrun;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.DefaultArtifact;
+import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.model.Dependency;
@@ -340,7 +342,15 @@ public final class DependencyGraph {
 
         private void loadDependencies(DependencyGraph g) throws ProjectBuildingException, ArtifactResolutionException, ArtifactNotFoundException {
             for( Dependency d : (List<Dependency>)pom.getDependencies() ) {
-                Artifact a = g.bag.factory.createArtifact(d.getGroupId(), d.getArtifactId(), d.getVersion(), d.getScope(), d.getType());
+                // the last boolean parameter is redundant, but the version that doesn't take this
+                // has a bug. See MNG-2524
+                Artifact a = g.bag.factory.createDependencyArtifact(
+                        d.getGroupId(), d.getArtifactId(), VersionRange.createFromVersion(d.getVersion()),
+                        d.getType(), d.getClassifier(), d.getScope(), false);
+
+                // beware of Maven bug! make sure artifact got the value inherited from dependency
+                assert a.getScope()==d.getScope();
+                
                 new Edge(g,this,g.toNode(a),d.getScope(),d.isOptional());
             }
         }
