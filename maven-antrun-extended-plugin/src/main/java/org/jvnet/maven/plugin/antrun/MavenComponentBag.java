@@ -193,7 +193,7 @@ final class MavenComponentBag {
             String type,
             String classifier)
             throws IOException {
-        Artifact artifact = null;
+        Artifact artifact;
         if (artifactId == null) {
             throw new IOException("Cannot resolve artifact: artifactId is null");
         } else if (groupId == null || version == null || classifier == null) {
@@ -286,35 +286,26 @@ final class MavenComponentBag {
             throw new IOException("Cannot resolve artifact: artifactId is null");
         }
         Set<Artifact> artifacts = project.getArtifacts();
-        for (Artifact artifact : artifacts) {
-            String aid = artifact.getArtifactId();
-            if (aid != null && aid.equalsIgnoreCase(artifactId)) {
-                artifactMatch = artifact;
-                // Match based on artifactId.  Try to match based on groupId
-                String gid = artifact.getGroupId();
-                if (gid != null && gid.equalsIgnoreCase(groupId)) {
-                    artifactMatch = artifact;
-                    // Match based on groupId.  Try to match based on version
-                    String ver = artifact.getVersion();
-                    if (ver != null && ver.equalsIgnoreCase(version)) {
-                        artifactMatch = artifact;
-                        // Match based on version.  Try to match based on type
-                        String typ = artifact.getType();
-                        if (typ != null && typ.equalsIgnoreCase(type)) {
-                            artifactMatch = artifact;
-                            // Match based on type. Try to match based on classifier
-                            String cls = artifact.getClassifier();
-                            if (cls != null && cls.equalsIgnoreCase(classifier)) {
-                                artifactMatch = artifact;
-                                // We have an exact match. Stop processing.
-                                break;
-                            }
-                        }
-                    }
+        for (Artifact a : artifacts) {
+            if(match(a.getArtifactId(),artifactId)
+            && match(a.getGroupId(),groupId)
+            && match(a.getVersion(),version)
+            && match(a.getType(),type)
+            && match(a.getClassifier(),classifier)) {
+                if(artifactMatch!=null) {
+                    // matched to more than one thing. Error
+                    throw new IOException("Matched more than one artifacts: "+a+" and "+artifactMatch);
                 }
+                artifactMatch = a;
             }
         }
         return artifactMatch;
+    }
+
+    private static boolean match(String valueFromPom, String valueFromTask) {
+        if(valueFromTask==null) return true;    // no value specified in the task. Any value from artifact match
+        if(valueFromPom==null)  return false;   // the actual value in the artifact didn't match the one given by task
+        return valueFromPom.equalsIgnoreCase(valueFromTask);
     }
 
     /**
