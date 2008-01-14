@@ -4,6 +4,8 @@ import org.apache.tools.ant.Project;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringWriter;
+import java.io.PrintWriter;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -43,7 +45,9 @@ public class VisualizeFilter extends GraphFilter {
             // report an error, but don't let this fail the build, so that it can still
             // work in environments that don't have GraphViz.
             log("Failed to create "+output, Project.MSG_WARN);
-            e.printStackTrace();
+            StringWriter sw = new StringWriter(); 
+            e.printStackTrace(new PrintWriter(sw));
+            log(sw.toString(),Project.MSG_VERBOSE);
         }
 
         return g;
