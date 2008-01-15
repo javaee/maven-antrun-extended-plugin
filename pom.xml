@@ -4,7 +4,7 @@
   <artifactId>maven-antrun-extended-plugin</artifactId>
   <packaging>maven-plugin</packaging>
   <name>Maven AntRun Extended Plugin</name>
-  <version>1.14</version>
+  <version>1.18</version>
   <description>This extended antrun maven plugin enables users not only to run ant scripts embedded in the POM, but also to reference maven dependencies using Ant task classes. This enables the user to delegate more complex tasks to Ant such as constructing file-based installation distros.</description>
 
   <licenses>
@@ -51,15 +51,20 @@
       <version>${maven.version}</version>
     </dependency>
     <dependency>
-        <groupId>org.apache.ant</groupId>
+        <groupId>ant</groupId>
         <artifactId>ant-launcher</artifactId>
-        <version>1.7.0</version>
+        <version>1.6.5</version>
         <scope>runtime</scope>
     </dependency>
     <dependency>
-        <groupId>org.apache.ant</groupId>
+        <groupId>ant</groupId>
         <artifactId>ant</artifactId>
-        <version>1.7.0</version>
+        <!--
+          Ant 1.7 causes http://www.nabble.com/Another-V3-build-error-after-update-tt14721686.html
+          See http://jira.codehaus.org/browse/MANTRUN-68 for the cause. In the mean time,
+          falling back to 1.6.5.
+        -->
+        <version>1.6.5</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
@@ -76,8 +81,8 @@
   </dependencies>
 
   <scm>
-    <connection>scm:svn:https://maven-antrun-extended-plugin.dev.java.net/svn/maven-antrun-extended-plugin/tags/maven-antrun-extended-plugin-1.14</connection>
-    <developerConnection>scm:svn:https://maven-antrun-extended-plugin.dev.java.net/svn/maven-antrun-extended-plugin/tags/maven-antrun-extended-plugin-1.14</developerConnection>
+    <connection>scm:svn:https://maven-antrun-extended-plugin.dev.java.net/svn/maven-antrun-extended-plugin/tags/maven-antrun-extended-plugin-1.18</connection>
+    <developerConnection>scm:svn:https://maven-antrun-extended-plugin.dev.java.net/svn/maven-antrun-extended-plugin/tags/maven-antrun-extended-plugin-1.18</developerConnection>
   </scm>
   <build>
     <plugins>
