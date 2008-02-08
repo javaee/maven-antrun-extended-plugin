@@ -23,13 +23,16 @@ import java.util.Collections;
  *      |                 |
  *      +-> C ------------+-> D ---> X
  * </pre>
- *
+ * 
  * @author Kohsuke Kawaguchi
  */
 public class DependencyExclusionFilter extends GraphFilter {
     public DependencyGraph process() {
         final DependencyGraph g = evaluateChild();
+        return filter(g);
+    }
 
+    public DependencyGraph filter(final DependencyGraph g) {
         // All the reachable nodes will be accumulated here.
         final Set<DependencyGraph.Node> reachables = new HashSet<DependencyGraph.Node>();
 
@@ -56,14 +59,15 @@ public class DependencyExclusionFilter extends GraphFilter {
                 // is this node excluded in the current path? If so, return.
                 String id = node.groupId + ':' + node.artifactId;
                 for (Set<String> e : exclusions)
-                    if(e.contains(id))  return;
+                    if(e.contains(id))
+                        return;
 
                 // now we know that this is reachable
                 reachables.add(node);
 
                 if(noExclusionSoFar && !visitedWithNoExclusion.add(node))
                     // optimization. this node has already been visited with no exclusion,
-                    // so no point in doing it twice 
+                    // so no point in doing it twice
                     return;
 
                 // create a new environment
@@ -73,8 +77,10 @@ public class DependencyExclusionFilter extends GraphFilter {
                 noExclusionSoFar &= newExc.isEmpty();
 
                 // recurse
-                for (DependencyGraph.Node child : node.getForwardNodes(g))
-                    visit(child);
+                for (DependencyGraph.Edge e : node.getForwardEdges(g)) {
+                    if(!e.optional)
+                        visit(e.dst);
+                }
 
                 // then restore the old environment
                 exclusions.pop();

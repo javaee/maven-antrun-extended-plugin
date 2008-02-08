@@ -63,6 +63,8 @@ public abstract class DependencyGraphTask extends Task {
                 log("artifactId "+artifactId,  Project.MSG_DEBUG);
             }
 
+            g = new DependencyExclusionFilter().filter(g);
+
             log("Graph="+g,Project.MSG_DEBUG);
 
             if(children.size()>1)
