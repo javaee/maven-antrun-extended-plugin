@@ -2,7 +2,7 @@ package org.jvnet.maven.plugin.antrun;
 
 /**
  * Traverses a {@link DependencyGraph} in a depth-first order.
- * All the reachable nodes and edges are visited.
+ * All the reachable nodes and edges are visited once and only once.
  *
  * @author Kohsuke Kawaguchi
  */
