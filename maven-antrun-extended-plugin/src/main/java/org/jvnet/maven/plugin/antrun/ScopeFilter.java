@@ -1,12 +1,11 @@
 package org.jvnet.maven.plugin.antrun;
 
 
-import org.apache.tools.ant.BuildException;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 /**
  * Filter out a {@link DependencyGraph} by only traversing the given scope.
@@ -30,19 +29,9 @@ public final class ScopeFilter extends GraphFilter implements GraphVisitor {
     }
 
     public void setLevel(String level) {
-        if(level.equals("compile")) {
-            scopes.addAll(Arrays.asList("provided","system","compile"));
-            return;
-        }
-        if(level.equals("runtime")) {
-            scopes.addAll(Arrays.asList("provided","system","compile","runtime"));
-            return;
-        }
-        if(level.equals("test")) {
-            scopes.addAll(Arrays.asList("provided","system","compile","runtime","test"));
-            return;
-        }
-        throw new BuildException("Illegal value: "+level);
+        StringTokenizer tokens = new StringTokenizer(level,", ");
+        while(tokens.hasMoreTokens())
+            scopes.add(tokens.nextToken().trim());
     }
 
     public DependencyGraph process() {
