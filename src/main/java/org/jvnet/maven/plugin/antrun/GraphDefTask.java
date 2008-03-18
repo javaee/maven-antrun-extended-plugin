@@ -13,16 +13,25 @@ import org.apache.tools.ant.BuildException;
  */
 public class GraphDefTask extends DependencyGraphTask {
     private String id;
+    protected GraphFilter filter;
 
     public void setId(String id) {
         this.id = id;
     }
 
+    /**
+     * Adds a {@link GraphFilter} child. Ant will invoke this for each child element given in build script.
+     */
+    public void add(GraphFilter child) {
+        if(filter!=null)
+            throw new BuildException("Too many filters are given");
+        this.filter = child;
+    }
 
     public void execute() throws BuildException {
         if(id==null)
             throw new BuildException("@id is required");
-        
-        getProject().addReference(id,buildGraph());
+
+        getProject().addReference(id,buildGraph(filter));
     }
 }

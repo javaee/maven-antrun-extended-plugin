@@ -6,7 +6,7 @@ package org.jvnet.maven.plugin.antrun;
  *
  * @author Paul Sterk
  */
-public final class PackagingFilter extends GraphFilter implements GraphVisitor {
+public final class PackagingFilter extends ListFilter {
     private String packaging;
     private String packagingNot;
 
@@ -18,13 +18,6 @@ public final class PackagingFilter extends GraphFilter implements GraphVisitor {
         packagingNot = v;
     }
 
-    public DependencyGraph process() {
-        // Create a subgraph of the dependencyGraph by using this class as a 
-        // GraphVisitor.  The visit(node) and visit(edge) methods are called
-        // by the immutable DependencyGraph instance to construct the subgraph.
-        return evaluateChild().createSubGraph(this);
-    }    
-    
     public boolean visit(DependencyGraph.Node node) {
         String p = node.getProject().getPackaging();
         if(packaging!=null && packaging.equals(p))
@@ -33,9 +26,5 @@ public final class PackagingFilter extends GraphFilter implements GraphVisitor {
             return true;    // negative match
 
         return false;
-    }
-
-    public boolean visit(DependencyGraph.Edge edge) {
-        return true;
     }
 }
