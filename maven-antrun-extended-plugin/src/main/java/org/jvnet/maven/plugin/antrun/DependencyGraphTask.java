@@ -46,7 +46,7 @@ public abstract class DependencyGraphTask extends Task {
     }
 
     /**
-     * Transforms a graph by applying the given filter to the "source graph",
+     * Transforms a graph by applying the given filter to thtese "source graph",
      * which is determined by the various parameter to this task.
      */
     protected DependencyGraph buildGraph(GraphFilter filter) {
