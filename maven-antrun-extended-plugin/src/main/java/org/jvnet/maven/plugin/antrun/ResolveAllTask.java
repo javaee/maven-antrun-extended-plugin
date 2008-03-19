@@ -58,14 +58,22 @@ public class ResolveAllTask extends DependencyGraphTask {
         log("Starting ResolveAllTasks.execute ", Project.MSG_DEBUG);
 
         // first graph filtering
-        List<Node> nodes = new ArrayList<Node>(buildGraph(filter).getAllNodes());
+        DependencyGraph g = buildGraph(filter);
+        List<Node> nodes = new ArrayList<Node>(g.getAllNodes());
 
         // further trim down the list by list filtering
-        for (ListFilter listFilter : listFilters) {
-            for (Iterator<Node> itr = nodes.iterator(); itr.hasNext();)
-                if(!listFilter.visit(itr.next()))
-                    itr.remove();
+        final DependencyGraph old = GraphFilter.CURRENT_INPUT.get();
+        GraphFilter.CURRENT_INPUT.set(g);
+        try {
+            for (ListFilter listFilter : listFilters) {
+                for (Iterator<Node> itr = nodes.iterator(); itr.hasNext();)
+                    if(!listFilter.visit(itr.next()))
+                        itr.remove();
+            }
+        } finally {
+            GraphFilter.CURRENT_INPUT.set(old);
         }
+
 
         if(pathId!=null) {
             // collect all artifacts into a path and export
