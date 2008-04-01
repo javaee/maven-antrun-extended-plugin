@@ -3,6 +3,7 @@ package org.jvnet.maven.plugin.antrun;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
+import org.apache.maven.artifact.resolver.AbstractArtifactResolutionException;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.project.MavenProject;
@@ -277,6 +278,16 @@ public final class DependencyGraph {
         return buf.toString();
     }
 
+    private interface Resolver {
+        File resolve() throws AbstractArtifactResolutionException;
+    }
+
+    private static final Resolver NULL = new Resolver() {
+        public File resolve() {
+            return null;
+        }
+    };
+
     /**
      * Node, which represents an artifact.
      *
@@ -295,6 +306,7 @@ public final class DependencyGraph {
 
         private final MavenProject pom;
         private /*final*/ File artifactFile;
+        private Resolver artifactResolver = NULL;
 
         private Node(Artifact artifact, DependencyGraph g) throws ProjectBuildingException, ArtifactResolutionException, ArtifactNotFoundException {
             groupId = artifact.getGroupId();
@@ -316,17 +328,22 @@ public final class DependencyGraph {
             }
         }
 
-        private void checkArtifact(Artifact artifact, MavenComponentBag bag) throws ArtifactResolutionException, ArtifactNotFoundException {
-            if(bag.project.getArtifact()==artifact) {
-                // our own module. Trying to resolve this in the usual way is most likely to fail,
-                // so use what we have, if any.
-                artifactFile =artifact.getFile();
-                return;
-            }
-            bag.resolveArtifact(artifact);
-            artifactFile = artifact.getFile();
-            if(artifactFile==null)
-                throw new IllegalStateException("Artifact is not resolved yet: "+artifact);
+        private void checkArtifact(final Artifact artifact, final MavenComponentBag bag) {
+            artifactResolver = new Resolver() {
+                public File resolve() throws AbstractArtifactResolutionException {
+                    if(bag.project.getArtifact()==artifact) {
+                        // our own module. Trying to resolve this in the usual way is most likely to fail,
+                        // so use what we have, if any.
+                        artifactFile =artifact.getFile();
+                        return artifactFile;
+                    }
+                    bag.resolveArtifact(artifact);
+                    artifactFile = artifact.getFile();
+                    if(artifactFile==null)
+                        throw new IllegalStateException("Artifact is not resolved yet: "+artifact);
+                    return artifactFile;
+                }
+            };
         }
 
         private Node(MavenProject pom, DependencyGraph g) throws ProjectBuildingException, ArtifactResolutionException, ArtifactNotFoundException {
@@ -373,8 +390,12 @@ public final class DependencyGraph {
          *      being built, this field may or may not be null, depending on whether the artifact is
          *      already created in the current build or not.
          *      For all the other modules, this is never null.
+         * @throws AbstractArtifactResolutionException
+         *      Failed to resolve artifacat.
          */
-        public File getArtifactFile() {
+        public File getArtifactFile() throws AbstractArtifactResolutionException {
+            if(artifactFile==null)
+                artifactFile = artifactResolver.resolve();
             return artifactFile;
         }
 
@@ -459,6 +480,26 @@ public final class DependencyGraph {
             result = 31 * result + (version != null ? version.hashCode() : 0);
             result = 31 * result + (classifier != null ? classifier.hashCode() : 0);
             return result;
+        }
+
+        /**
+         * Builds the dependency trail from this node to the root node, in that order.
+         *
+         * This is useful as diagnostic information.
+         */
+        public List<Edge> getTrail(DependencyGraph graph) {
+            List<Edge> trail = new ArrayList<Edge>();
+            Node n = this;
+            while(true) {
+                List<Edge> list = n.getBackwardEdges(graph);
+                if(list.isEmpty())
+                    throw new AssertionError("Lost trail at "+trail);
+                Edge e = list.get(0);
+                trail.add(e);
+                n = e.src;
+                if(n==graph.getRoot())
+                    return trail;
+            }
         }
     }
 

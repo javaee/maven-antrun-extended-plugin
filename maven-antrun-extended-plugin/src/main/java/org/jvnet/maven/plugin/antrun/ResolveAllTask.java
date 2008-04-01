@@ -5,6 +5,7 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.Path;
+import org.apache.maven.artifact.resolver.AbstractArtifactResolutionException;
 import org.jvnet.maven.plugin.antrun.DependencyGraph.Node;
 
 import java.io.File;
@@ -79,9 +80,13 @@ public class ResolveAllTask extends DependencyGraphTask {
             // collect all artifacts into a path and export
             Path path = new Path(getProject());
             for (Node n : nodes) {
-                File f = n.getArtifactFile();
-                if(f!=null)
+                try {
+                    File f = n.getArtifactFile();
+                    if(f!=null)
                     path.createPathElement().setLocation(f);
+                } catch (AbstractArtifactResolutionException e) {
+                    throw new BuildException("Failed to resolve artifact. Trail="+n.getTrail(g),e);
+                }
             }
             getProject().addReference(pathId,path);
         }
@@ -96,12 +101,16 @@ public class ResolveAllTask extends DependencyGraphTask {
 
             boolean hasSomethingToCopy=false;
             for (Node n : nodes) {
-                File f = n.getArtifactFile();
-                if(f!=null) {
-                    FileSet fs = new FileSet();
-                    fs.setFile(f);
-                    cp.addFileset(fs);
-                    hasSomethingToCopy=true;
+                try {
+                    File f = n.getArtifactFile();
+                    if(f!=null) {
+                        FileSet fs = new FileSet();
+                        fs.setFile(f);
+                        cp.addFileset(fs);
+                        hasSomethingToCopy=true;
+                    }
+                } catch (AbstractArtifactResolutionException e) {
+                    throw new BuildException("Failed to resolve artifact. Trail="+n.getTrail(g),e);
                 }
             }
 
