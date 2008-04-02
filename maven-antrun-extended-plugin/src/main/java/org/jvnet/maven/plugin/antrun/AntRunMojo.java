@@ -245,6 +245,7 @@ public class AntRunMojo
         RetentionSetFilter.class,
         ExcludeArtifactsTransitivelyFilter.class,
         PackagingFilter.class,
+        ManifestEntryFilter.class,
         DependencyExclusionFilter.class,
         RemoveSpecificArtifactsFilter.class,
         ScopeFilter.class,
