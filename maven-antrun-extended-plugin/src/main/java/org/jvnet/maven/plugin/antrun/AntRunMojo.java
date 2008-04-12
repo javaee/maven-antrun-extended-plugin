@@ -244,6 +244,7 @@ public class AntRunMojo
     private static final Class[] FILTERS = new Class[] {
         RetentionSetFilter.class,
         ExcludeArtifactsTransitivelyFilter.class,
+        GroupIdFilter.class,
         PackagingFilter.class,
         ManifestEntryFilter.class,
         DependencyExclusionFilter.class,
