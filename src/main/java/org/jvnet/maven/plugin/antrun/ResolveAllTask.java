@@ -6,9 +6,11 @@ import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.Path;
 import org.apache.maven.artifact.resolver.AbstractArtifactResolutionException;
+import org.apache.maven.artifact.Artifact;
 import org.jvnet.maven.plugin.antrun.DependencyGraph.Node;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -29,6 +31,8 @@ public class ResolveAllTask extends DependencyGraphTask {
 
     private GraphFilter filter;
 
+    private String classifier;
+
     private final List<ListFilter> listFilters = new ArrayList<ListFilter>();
     
     public void setTodir(File todir) {
@@ -38,6 +42,16 @@ public class ResolveAllTask extends DependencyGraphTask {
     
     public void setPathId(String pathId) {
         this.pathId = pathId;
+    }
+
+    /**
+     * Instead of resolving the artifact as appeared in the dependency graph,
+     * resolve a specific classifier.
+     *
+     * This is normally used to gather source jars.
+     */
+    public void setClassifier(String classifier) {
+        this.classifier = classifier;
     }
 
     /**
@@ -81,10 +95,12 @@ public class ResolveAllTask extends DependencyGraphTask {
             Path path = new Path(getProject());
             for (Node n : nodes) {
                 try {
-                    File f = n.getArtifactFile();
+                    File f = resolve(n);
                     if(f!=null)
                     path.createPathElement().setLocation(f);
                 } catch (AbstractArtifactResolutionException e) {
+                    throw new BuildException("Failed to resolve artifact. Trail="+n.getTrail(g),e);
+                } catch (IOException e) {
                     throw new BuildException("Failed to resolve artifact. Trail="+n.getTrail(g),e);
                 }
             }
@@ -102,7 +118,7 @@ public class ResolveAllTask extends DependencyGraphTask {
             boolean hasSomethingToCopy=false;
             for (Node n : nodes) {
                 try {
-                    File f = n.getArtifactFile();
+                    File f = resolve(n);
                     if(f!=null) {
                         FileSet fs = new FileSet();
                         fs.setFile(f);
@@ -110,6 +126,8 @@ public class ResolveAllTask extends DependencyGraphTask {
                         hasSomethingToCopy=true;
                     }
                 } catch (AbstractArtifactResolutionException e) {
+                    throw new BuildException("Failed to resolve artifact. Trail="+n.getTrail(g),e);
+                } catch (IOException e) {
                     throw new BuildException("Failed to resolve artifact. Trail="+n.getTrail(g),e);
                 }
             }
@@ -121,5 +139,15 @@ public class ResolveAllTask extends DependencyGraphTask {
         }
 
         log("Exiting ResolveAllTasks.execute ", Project.MSG_DEBUG);
+    }
+
+    private File resolve(Node n) throws AbstractArtifactResolutionException, IOException {
+        if(classifier==null)
+            return n.getArtifactFile();
+
+        final MavenComponentBag w = MavenComponentBag.get();
+        Artifact a = w.factory.createArtifactWithClassifier(n.groupId, n.artifactId, n.version, n.type, classifier);
+        w.resolveArtifact(a);
+        return a.getFile();
     }
 }

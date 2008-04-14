@@ -302,7 +302,7 @@ public final class DependencyGraph {
          * If {@link #pom} is non-null, this information is redundant, but it needs to be
          * kept separately for those rare cases where pom==null.
          */
-        public final String groupId,artifactId,version,classifier;
+        public final String groupId,artifactId,version,type,classifier;
 
         private final MavenProject pom;
         private /*final*/ File artifactFile;
@@ -312,6 +312,7 @@ public final class DependencyGraph {
             groupId = artifact.getGroupId();
             artifactId = artifact.getArtifactId();
             version = artifact.getVersion();
+            type = artifact.getType();
             classifier = artifact.getClassifier();
 
             if("system".equals(artifact.getScope()))
@@ -351,6 +352,7 @@ public final class DependencyGraph {
             groupId = pom.getGroupId();
             artifactId = pom.getArtifactId();
             version = pom.getVersion();
+            type = pom.getPackaging(); // are these the same thing?
             classifier = null;
             checkArtifact(pom.getArtifact(),g.bag);
             loadDependencies(g);
