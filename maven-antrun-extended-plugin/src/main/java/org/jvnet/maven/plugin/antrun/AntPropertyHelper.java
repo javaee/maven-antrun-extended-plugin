@@ -26,7 +26,6 @@ import org.codehaus.plexus.util.introspection.ReflectionValueExtractor;
 
 import java.io.File;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -41,7 +40,7 @@ public class AntPropertyHelper
     private Log log;
     private ExpressionEvaluator exprEvaluator;
     private MavenProject mavenProject;
-    private Map artifactMap = new Hashtable();
+    private Map<String,File> artifactMap = new Hashtable<String,File>();
 
     /**
      * @deprecated use the other constructor
@@ -59,23 +58,20 @@ public class AntPropertyHelper
      * @param artifacts
      * @param l
      */
-    public AntPropertyHelper( ExpressionEvaluator exprEvaluator, Set artifacts, Log l )
+    public AntPropertyHelper( ExpressionEvaluator exprEvaluator, Set<Artifact> artifacts, Log l )
     {
         this.mavenProject = null;
         this.exprEvaluator = exprEvaluator;
         this.log = l;
 
-        for ( Iterator it = artifacts.iterator(); it.hasNext(); )
-        {
-            Artifact artifact = (Artifact) it.next();
-
+        for (Artifact artifact : artifacts) {
             String key = "maven.dependency." + artifact.getGroupId() + "." + artifact.getArtifactId() +
-                ( artifact.getClassifier() != null ? "." + artifact.getClassifier() : "" ) +
-                ( artifact.getType() != null ? "." + artifact.getType() : "" ) + ".path";
+                    (artifact.getClassifier() != null ? "." + artifact.getClassifier() : "") +
+                    (artifact.getType() != null ? "." + artifact.getType() : "") + ".path";
 
-            log.debug( "Storing: " + key + "=" + artifact.getFile().getPath() );
+            log.debug("Storing: " + key + "=" + artifact.getFile().getPath());
 
-            artifactMap.put( key, artifact.getFile().getPath() );
+            artifactMap.put(key, artifact.getFile());
         }
     }
 
@@ -100,7 +96,7 @@ public class AntPropertyHelper
 
         if ( name.startsWith( "maven.dependency." ) )
         {
-            val = (String) artifactMap.get( name );
+            val = artifactMap.get( name ).getPath();
         }
 
         if ( val == null )
@@ -146,7 +142,7 @@ public class AntPropertyHelper
         {
             if ( name.startsWith( "maven.dependency." ) )
             {
-                val = (String) artifactMap.get( name );
+                val = artifactMap.get( name ).getPath();
             }
             else if ( name.startsWith( "project." ) )
             {
@@ -179,7 +175,7 @@ public class AntPropertyHelper
             val = super.getPropertyHook( ns, name, user );
             if ( val == null )
             {
-                val = System.getProperty( name.toString() );
+                val = System.getProperty(name);
             }
         }
 
