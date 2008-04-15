@@ -492,16 +492,15 @@ public final class DependencyGraph {
         public List<Edge> getTrail(DependencyGraph graph) {
             List<Edge> trail = new ArrayList<Edge>();
             Node n = this;
-            while(true) {
+            while(n!=graph.getRoot()) {
                 List<Edge> list = n.getBackwardEdges(graph);
                 if(list.isEmpty())
                     throw new AssertionError("Lost trail at "+trail+" from "+this+" with "+graph);
                 Edge e = list.get(0);
                 trail.add(e);
                 n = e.src;
-                if(n==graph.getRoot())
-                    return trail;
             }
+            return trail;
         }
     }
 
