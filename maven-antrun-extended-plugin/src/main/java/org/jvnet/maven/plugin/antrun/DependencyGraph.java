@@ -495,7 +495,7 @@ public final class DependencyGraph {
             while(true) {
                 List<Edge> list = n.getBackwardEdges(graph);
                 if(list.isEmpty())
-                    throw new AssertionError("Lost trail at "+trail);
+                    throw new AssertionError("Lost trail at "+trail+" from "+this+" with "+graph);
                 Edge e = list.get(0);
                 trail.add(e);
                 n = e.src;
