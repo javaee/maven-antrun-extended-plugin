@@ -21,6 +21,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 import java.util.TreeMap;
+import java.util.Queue;
+import java.util.LinkedList;
 
 /**
  * Graph of dependencies among Maven artifacts.
@@ -79,14 +81,26 @@ public final class DependencyGraph {
      * Creates a full dependency graph with the given artifact at the top.
      */
     public DependencyGraph(Artifact root) throws ProjectBuildingException, ArtifactResolutionException, ArtifactNotFoundException {
-        this.root = toNode(root);
+        Queue<Node> q = new LinkedList<Node>();
+        this.root = buildNode(root,q);
+        visitBFS(q);
     }
 
     /**
      * Creates a full dependency graph with the given project at the top.
      */
     public DependencyGraph(MavenProject root) throws ProjectBuildingException, ArtifactResolutionException, ArtifactNotFoundException {
-        this.root = toNode(root);
+        Queue<Node> q = new LinkedList<Node>();
+        this.root = buildNode(root,q);
+        visitBFS(q);
+    }
+
+    /**
+     * Completes the graph in a breadth-first fashion.
+     */
+    private void visitBFS(Queue<Node> q) throws ArtifactResolutionException, ArtifactNotFoundException, ProjectBuildingException {
+        while(!q.isEmpty())
+            q.poll().expand(this,q);
     }
 
     /**
@@ -154,28 +168,41 @@ public final class DependencyGraph {
     }
 
     /**
-     * Gets the associated {@link Node}. If none exists, it will be created.
+     * Gets the associated {@link Node}, or null if none exists.
      */
     public Node toNode(Artifact a) throws ProjectBuildingException, ArtifactResolutionException, ArtifactNotFoundException {
+        String id = a.getGroupId()+':'+a.getArtifactId()+':'+a.getClassifier();
+        return nodes.get(id);
+    }
+
+    /**
+     * Gets the associated {@link Node}. If none exists, it will be created.
+     *
+     * <p>
+     * Graph building has to be done breadth-first fashion so that the version
+     * conflit resolution happens correctly &mdash; that is, if there exists dependency like
+     * A -> B(1.0) -> C(2.0) and A -> C(2.2), then we want to pick up C(2.2), not C(2.0).
+     * The criteria to do this in Maven is the length of the dependency chain, and that
+     * can be done naturally by BFS. So we pass around a {@link Queue} to keep track of the remaining
+     * {@link Node}s to be expanded.
+     */
+    private Node buildNode(Artifact a, Queue<Node> q) throws ProjectBuildingException, ArtifactResolutionException, ArtifactNotFoundException {
         String id = a.getGroupId()+':'+a.getArtifactId()+':'+a.getClassifier();
 
         Node n = nodes.get(id);
         if(n==null) {
-            n = new Node(a,this);
+            n = new Node(a,this,q);
             nodes.put(id, n);
         }
         return n;
     }
 
-    /**
-     * Gets the associated {@link Node}. If none exists, it will be created.
-     */
-    private Node toNode(MavenProject p) throws ProjectBuildingException, ArtifactResolutionException, ArtifactNotFoundException {
+    private Node buildNode(MavenProject p, Queue<Node> q) throws ProjectBuildingException, ArtifactResolutionException, ArtifactNotFoundException {
         String id = p.getGroupId()+':'+p.getArtifactId()+":null";
 
         Node n = nodes.get(id);
         if(n==null) {
-            n = new Node(p,this);
+            n = new Node(p, q);
             nodes.put(id, n);
         }
         return n;
@@ -308,7 +335,7 @@ public final class DependencyGraph {
         private /*final*/ File artifactFile;
         private Resolver artifactResolver = NULL;
 
-        private Node(Artifact artifact, DependencyGraph g) throws ProjectBuildingException, ArtifactResolutionException, ArtifactNotFoundException {
+        private Node(Artifact artifact, DependencyGraph g, Queue<Node> q) throws ProjectBuildingException, ArtifactResolutionException, ArtifactNotFoundException {
             groupId = artifact.getGroupId();
             artifactId = artifact.getArtifactId();
             version = artifact.getVersion();
@@ -324,8 +351,7 @@ public final class DependencyGraph {
                         g.bag.factory.createProjectArtifact(artifact.getGroupId(),artifact.getArtifactId(), artifact.getVersion()),
                         g.bag.project.getRemoteArtifactRepositories(),
                         g.bag.localRepository);
-                loadDependencies(g);
-                checkArtifact(artifact,g.bag);
+                q.add(this); // visit dependencies from this POM later
             }
         }
 
@@ -347,18 +373,22 @@ public final class DependencyGraph {
             };
         }
 
-        private Node(MavenProject pom, DependencyGraph g) throws ProjectBuildingException, ArtifactResolutionException, ArtifactNotFoundException {
+        private Node(MavenProject pom, Queue<Node> q) {
             this.pom = pom;
             groupId = pom.getGroupId();
             artifactId = pom.getArtifactId();
             version = pom.getVersion();
             type = pom.getPackaging(); // are these the same thing?
             classifier = null;
-            checkArtifact(pom.getArtifact(),g.bag);
-            loadDependencies(g);
+            q.add(this); // visit dependencies from this POM later
         }
 
-        private void loadDependencies(DependencyGraph g) throws ProjectBuildingException, ArtifactResolutionException, ArtifactNotFoundException {
+        private void expand(DependencyGraph g, Queue<Node> q) throws ArtifactResolutionException, ArtifactNotFoundException, ProjectBuildingException {
+            checkArtifact(pom.getArtifact(),g.bag);
+            loadDependencies(g,q);
+        }
+
+        private void loadDependencies(DependencyGraph g, Queue<Node> q) throws ProjectBuildingException, ArtifactResolutionException, ArtifactNotFoundException {
             for( Dependency d : (List<Dependency>)pom.getDependencies() ) {
                 // the last boolean parameter is redundant, but the version that doesn't take this
                 // has a bug. See MNG-2524
@@ -367,9 +397,9 @@ public final class DependencyGraph {
                         d.getType(), d.getClassifier(), d.getScope(), false);
 
                 // beware of Maven bug! make sure artifact got the value inherited from dependency
-                assert a.getScope()==d.getScope();
+                assert a.getScope().equals(d.getScope());
                 
-                new Edge(g,this,g.toNode(a),d.getScope(),d.isOptional());
+                new Edge(g,this,g.buildNode(a,q),d.getScope(),d.isOptional());
             }
         }
 
