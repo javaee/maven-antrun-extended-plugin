@@ -530,6 +530,7 @@ public final class DependencyGraph {
                 trail.add(e);
                 n = e.src;
             }
+            Collections.reverse(trail);
             return trail;
         }
     }
