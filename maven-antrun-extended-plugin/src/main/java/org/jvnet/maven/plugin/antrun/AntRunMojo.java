@@ -25,6 +25,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.maven.project.MavenProjectHelper;
+import org.apache.maven.profiles.ProfileManager;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Target;
 import org.apache.tools.ant.taskdefs.Taskdef;
@@ -150,6 +151,12 @@ public class AntRunMojo
      */
     private MavenProjectBuilder mavenProjectBuilder;
 
+// this is not available as a component
+//    /**
+//     * @component
+//     */
+//    private ProfileManager profileManager;
+
     /**
      * @see org.apache.maven.plugin.Mojo#execute()
      */
@@ -238,7 +245,8 @@ public class AntRunMojo
         ResolveArtifactTask.class,
         ResolveAllTask.class,
         AttachArtifactTask.class,
-        GraphDefTask.class
+        GraphDefTask.class,
+        IfTask.class
     };
 
     private static final Class[] FILTERS = new Class[] {

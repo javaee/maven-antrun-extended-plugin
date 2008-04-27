@@ -34,6 +34,7 @@ import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.maven.project.MavenProjectHelper;
+import org.apache.maven.profiles.ProfileManager;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -92,22 +93,17 @@ final class MavenComponentBag {
     
     /**
      * Creates a wrapper and associates that with the current thread.
-     *
-     * @param resolver
-     * @param factory
-     * @param localRepository
-     * @param remoteRepositories
      */
     /*package*/ MavenComponentBag(
-        ArtifactResolver resolver, 
+        ArtifactResolver resolver,
         ArtifactFactory factory,
-        ArtifactRepository localRepository, 
-        List remoteRepositories, 
+        ArtifactRepository localRepository,
+        List remoteRepositories,
         MavenProject project,
         MavenProjectHelper projectHelper,
         ArtifactHandlerManager artifactHandlerManager,
         ArtifactMetadataSource artifactMetadataSource,
-        MavenProjectBuilder mavenProjectBuilder) 
+        MavenProjectBuilder mavenProjectBuilder)
     {
         this.resolver = resolver;
         this.factory = factory;
