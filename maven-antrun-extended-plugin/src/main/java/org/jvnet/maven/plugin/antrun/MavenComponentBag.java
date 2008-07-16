@@ -34,7 +34,6 @@ import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.maven.project.MavenProjectHelper;
-import org.apache.maven.profiles.ProfileManager;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -307,14 +306,20 @@ final class MavenComponentBag {
     /**
      * Obtains/downloads the artifact file by using the current set of repositories.
      */
-    public void resolveArtifact(Artifact artifact) throws ArtifactResolutionException, ArtifactNotFoundException {
+    public void resolveArtifact(Artifact artifact, List remoteRepositories) throws ArtifactResolutionException, ArtifactNotFoundException {
+        if(remoteRepositories ==null)
+            remoteRepositories =  this.remoteRepositories; // fall back to the default list
         try {
-            resolver.resolve(artifact,remoteRepositories,localRepository);
+            resolver.resolve(artifact, remoteRepositories,localRepository);
         } catch (ArtifactResolutionException e) {
             // these pointless catch blocks are convenient for setting breakpoint 
             throw e;
         } catch (ArtifactNotFoundException e) {
             throw e;
         }
+    }
+
+    public void resolveArtifact(Artifact artifact) throws ArtifactResolutionException, ArtifactNotFoundException {
+        resolveArtifact(artifact, remoteRepositories);
     }
 }

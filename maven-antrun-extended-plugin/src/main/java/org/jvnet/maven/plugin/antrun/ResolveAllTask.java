@@ -147,7 +147,10 @@ public class ResolveAllTask extends DependencyGraphTask {
 
         final MavenComponentBag w = MavenComponentBag.get();
         Artifact a = w.factory.createArtifactWithClassifier(n.groupId, n.artifactId, n.version, n.type, classifier);
-        w.resolveArtifact(a);
+        List remoteRepos=null;
+        if(n.getProject()!=null)
+            remoteRepos = n.getProject().getRemoteArtifactRepositories();
+        w.resolveArtifact(a,remoteRepos);
         return a.getFile();
     }
 }

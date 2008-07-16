@@ -364,7 +364,10 @@ public final class DependencyGraph {
                         artifactFile =artifact.getFile();
                         return artifactFile;
                     }
-                    bag.resolveArtifact(artifact);
+                    if(pom!=null)
+                        bag.resolveArtifact(artifact, pom.getRemoteArtifactRepositories());
+                    else
+                        bag.resolveArtifact(artifact);
                     artifactFile = artifact.getFile();
                     if(artifactFile==null)
                         throw new IllegalStateException("Artifact is not resolved yet: "+artifact);
