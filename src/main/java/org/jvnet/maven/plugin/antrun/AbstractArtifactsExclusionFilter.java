@@ -17,7 +17,7 @@ import java.io.IOException;
  *
  * @author Kohsuke Kawaguchi
  */
-abstract class AbstractArtifactsExclusionFilter extends ListFilter {
+public abstract class AbstractArtifactsExclusionFilter extends ListFilter {
     /**
      * IDs of the artifacts to exclude. "groupId:artifactId:classifier".
      * These three are sufficient to identify an artifact uniquely within the context of single project
