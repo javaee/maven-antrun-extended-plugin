@@ -392,17 +392,26 @@ public final class DependencyGraph {
         }
 
         private void loadDependencies(DependencyGraph g, Queue<Node> q) throws ProjectBuildingException, ArtifactResolutionException, ArtifactNotFoundException {
-            for( Dependency d : (List<Dependency>)pom.getDependencies() ) {
-                // the last boolean parameter is redundant, but the version that doesn't take this
-                // has a bug. See MNG-2524
-                Artifact a = g.bag.factory.createDependencyArtifact(
-                        d.getGroupId(), d.getArtifactId(), VersionRange.createFromVersion(d.getVersion()),
-                        d.getType(), d.getClassifier(), d.getScope(), false);
+            try {
+                for( Dependency d : (List<Dependency>)pom.getDependencies() ) {
+                    // the last boolean parameter is redundant, but the version that doesn't take this
+                    // has a bug. See MNG-2524
+                    Artifact a = g.bag.factory.createDependencyArtifact(
+                            d.getGroupId(), d.getArtifactId(), VersionRange.createFromVersion(d.getVersion()),
+                            d.getType(), d.getClassifier(), d.getScope(), false);
 
-                // beware of Maven bug! make sure artifact got the value inherited from dependency
-                assert a.getScope().equals(d.getScope());
-                
-                new Edge(g,this,g.buildNode(a,q),d.getScope(),d.isOptional());
+                    // beware of Maven bug! make sure artifact got the value inherited from dependency
+                    assert a.getScope().equals(d.getScope());
+
+                    new Edge(g,this,g.buildNode(a,q),d.getScope(),d.isOptional());
+                }
+            } catch (ProjectBuildingException e) {
+                throw new ProjectBuildingException(getId(),"Failed to parse dependencies of "+getId()+". trail="+getTrail(g),e);
+            } catch (ArtifactResolutionException e) {
+                // TODO: define our own exception type to avoid chaining exception to an unrelated type
+                throw new ProjectBuildingException(getId(),"Failed to parse dependencies of "+getId()+". trail="+getTrail(g),e);
+            } catch (ArtifactNotFoundException e) {
+                throw new ProjectBuildingException(getId(),"Failed to parse dependencies of "+getId()+". trail="+getTrail(g),e);
             }
         }
 
