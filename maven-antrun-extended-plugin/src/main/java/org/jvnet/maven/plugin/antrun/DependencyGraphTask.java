@@ -20,6 +20,7 @@ import java.util.Collection;
 public abstract class DependencyGraphTask extends Task {
     private String groupId,artifactId,version,type="jar",classifier;
     private String baseGraph;
+    private boolean tolerateBrokenPOMs;
 
     public void setGroupId(String groupId) {
         this.groupId = groupId;
@@ -43,6 +44,13 @@ public abstract class DependencyGraphTask extends Task {
 
     public void setBaseGraph(String id) {
         this.baseGraph = id;
+    }
+
+    /**
+     * If true, ignore an artifact that fails to resolve.
+     */
+    public void setTolerateBrokenPOMs(boolean tolerateBrokenPOMs) {
+        this.tolerateBrokenPOMs = tolerateBrokenPOMs;
     }
 
     /**
@@ -92,10 +100,10 @@ public abstract class DependencyGraphTask extends Task {
         } else
         if(groupId==null && artifactId==null && version==null) {
             // if no clue is given whatsoever, use all the project dependencies
-            g = new DependencyGraph(w.project.getArtifact());
+            g = new DependencyGraph(w.project.getArtifact(), tolerateBrokenPOMs);
         } else {
             // otherwise pick up dependencies from the specified artifact
-            g = new DependencyGraph(w.createArtifactWithClassifier(groupId,artifactId,version,type,classifier));
+            g = new DependencyGraph(w.createArtifactWithClassifier(groupId,artifactId,version,type,classifier), tolerateBrokenPOMs);
             log("artifactId "+artifactId,  Project.MSG_DEBUG);
         }
 

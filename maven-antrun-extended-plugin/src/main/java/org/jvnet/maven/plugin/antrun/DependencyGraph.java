@@ -69,6 +69,11 @@ public final class DependencyGraph {
     private final Map<String,Node> nodes = new TreeMap<String,Node>();
 
     /**
+     * If true, ignore the {@link Node} that have failed to load.
+     */
+    private final boolean tolerateBrokenPOMs;
+
+    /**
      * Forward edges.
      *
      * Edges are kept on {@link DependencyGraph} so that we can
@@ -80,7 +85,8 @@ public final class DependencyGraph {
     /**
      * Creates a full dependency graph with the given artifact at the top.
      */
-    public DependencyGraph(Artifact root) throws ProjectBuildingException, ArtifactResolutionException, ArtifactNotFoundException {
+    public DependencyGraph(Artifact root, boolean tolerateBrokenPOMs) throws ProjectBuildingException, ArtifactResolutionException, ArtifactNotFoundException {
+        this.tolerateBrokenPOMs = tolerateBrokenPOMs;
         Queue<Node> q = new LinkedList<Node>();
         this.root = buildNode(root,q);
         visitBFS(q);
@@ -89,7 +95,8 @@ public final class DependencyGraph {
     /**
      * Creates a full dependency graph with the given project at the top.
      */
-    public DependencyGraph(MavenProject root) throws ProjectBuildingException, ArtifactResolutionException, ArtifactNotFoundException {
+    public DependencyGraph(MavenProject root, boolean tolerateBrokenPOMs) throws ProjectBuildingException, ArtifactResolutionException, ArtifactNotFoundException {
+        this.tolerateBrokenPOMs = tolerateBrokenPOMs;
         Queue<Node> q = new LinkedList<Node>();
         this.root = buildNode(root,q);
         visitBFS(q);
@@ -110,7 +117,8 @@ public final class DependencyGraph {
      * hence the 'private' access. Use {@link #createSubGraph(GraphVisitor)}
      * to construct a subset reliably.
      */
-    private DependencyGraph(Node root, Collection<Node> nodes, Collection<Edge> edges) {
+    private DependencyGraph(Node root, Collection<Node> nodes, Collection<Edge> edges, boolean tolerateBrokenPOMs) {
+        this.tolerateBrokenPOMs = tolerateBrokenPOMs;
         if(nodes.isEmpty())     root = null; // graph is empty
 
         this.root = root;
@@ -270,7 +278,7 @@ public final class DependencyGraph {
             }
         }
 
-        return new DependencyGraph(node,nodes,edges);
+        return new DependencyGraph(node,nodes,edges, tolerateBrokenPOMs);
     }
 
     /**
@@ -285,7 +293,7 @@ public final class DependencyGraph {
                     edges.add(e);
             }
         }
-        return new DependencyGraph(root,nodes,edges);
+        return new DependencyGraph(root,nodes,edges, tolerateBrokenPOMs);
     }
 
     public String toString() {
@@ -392,27 +400,33 @@ public final class DependencyGraph {
         }
 
         private void loadDependencies(DependencyGraph g, Queue<Node> q) throws ProjectBuildingException, ArtifactResolutionException, ArtifactNotFoundException {
-            try {
-                for( Dependency d : (List<Dependency>)pom.getDependencies() ) {
-                    // the last boolean parameter is redundant, but the version that doesn't take this
-                    // has a bug. See MNG-2524
-                    Artifact a = g.bag.factory.createDependencyArtifact(
-                            d.getGroupId(), d.getArtifactId(), VersionRange.createFromVersion(d.getVersion()),
-                            d.getType(), d.getClassifier(), d.getScope(), false);
+            for( Dependency d : (List<Dependency>)pom.getDependencies() ) {
+                // the last boolean parameter is redundant, but the version that doesn't take this
+                // has a bug. See MNG-2524
+                Artifact a = g.bag.factory.createDependencyArtifact(
+                        d.getGroupId(), d.getArtifactId(), VersionRange.createFromVersion(d.getVersion()),
+                        d.getType(), d.getClassifier(), d.getScope(), false);
 
-                    // beware of Maven bug! make sure artifact got the value inherited from dependency
-                    assert a.getScope().equals(d.getScope());
+                // beware of Maven bug! make sure artifact got the value inherited from dependency
+                assert a.getScope().equals(d.getScope());
 
+                try {
                     new Edge(g,this,g.buildNode(a,q),d.getScope(),d.isOptional());
+                } catch (ProjectBuildingException e) {
+                    handleNodeResolutionException(g,e);
+                } catch (ArtifactResolutionException e) {
+                    handleNodeResolutionException(g,e);
+                } catch (ArtifactNotFoundException e) {
+                    handleNodeResolutionException(g,e);
                 }
-            } catch (ProjectBuildingException e) {
-                throw new ProjectBuildingException(getId(),"Failed to parse dependencies of "+getId()+". trail="+getTrail(g),e);
-            } catch (ArtifactResolutionException e) {
-                // TODO: define our own exception type to avoid chaining exception to an unrelated type
-                throw new ProjectBuildingException(getId(),"Failed to parse dependencies of "+getId()+". trail="+getTrail(g),e);
-            } catch (ArtifactNotFoundException e) {
-                throw new ProjectBuildingException(getId(),"Failed to parse dependencies of "+getId()+". trail="+getTrail(g),e);
             }
+        }
+
+        private void handleNodeResolutionException(DependencyGraph g, Exception e) throws ProjectBuildingException {
+            if (g.tolerateBrokenPOMs)
+                System.err.println("Failed to parse dependencies of " + getId() + ". trail=" + getTrail(g));
+            else
+                throw new ProjectBuildingException(getId(), "Failed to parse dependencies of " + getId() + ". trail=" + getTrail(g), e);
         }
 
         /**
