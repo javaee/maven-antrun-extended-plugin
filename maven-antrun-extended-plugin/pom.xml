@@ -4,7 +4,7 @@
   <artifactId>maven-antrun-extended-plugin</artifactId>
   <packaging>maven-plugin</packaging>
   <name>Maven AntRun Extended Plugin</name>
-  <version>1.32</version>
+  <version>1.33-SNAPSHOT</version>
   <description>This extended antrun maven plugin enables users not only to run ant scripts embedded in the POM, but also to reference maven dependencies using Ant task classes. This enables the user to delegate more complex tasks to Ant such as constructing file-based installation distros.</description>
 
   <licenses>
@@ -81,8 +81,8 @@
   </dependencies>
 
   <scm>
-    <connection>scm:svn:https://maven-antrun-extended-plugin.dev.java.net/svn/maven-antrun-extended-plugin/tags/maven-antrun-extended-plugin-1.32</connection>
-    <developerConnection>scm:svn:https://maven-antrun-extended-plugin.dev.java.net/svn/maven-antrun-extended-plugin/tags/maven-antrun-extended-plugin-1.32</developerConnection>
+    <connection>scm:svn:https://maven-antrun-extended-plugin.dev.java.net/svn/maven-antrun-extended-plugin/trunk/maven-antrun-extended-plugin</connection>
+    <developerConnection>scm:svn:https://maven-antrun-extended-plugin.dev.java.net/svn/maven-antrun-extended-plugin/trunk/maven-antrun-extended-plugin</developerConnection>
   </scm>
   <build>
     <plugins>
