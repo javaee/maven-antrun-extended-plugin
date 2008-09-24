@@ -2,6 +2,7 @@ package org.jvnet.maven.plugin.antrun;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
+import org.apache.tools.ant.util.FileNameMapper;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.Path;
@@ -34,7 +35,9 @@ public class ResolveAllTask extends DependencyGraphTask {
     private String classifier;
 
     private final List<ListFilter> listFilters = new ArrayList<ListFilter>();
-    
+
+    private boolean stripVersion;
+
     public void setTodir(File todir) {
         this.todir = todir;
         todir.mkdirs();
@@ -52,6 +55,15 @@ public class ResolveAllTask extends DependencyGraphTask {
      */
     public void setClassifier(String classifier) {
         this.classifier = classifier;
+    }
+
+    /**
+     * If set to true, destination file names won't have version
+     * encoded in them.
+     * @param stripVersion destination file name to have version or not
+     */
+    public void setStripVersion(boolean stripVersion) {
+        this.stripVersion = stripVersion;
     }
 
     /**
@@ -108,21 +120,24 @@ public class ResolveAllTask extends DependencyGraphTask {
         }
 
         if(todir!=null) {
-            // copy files to the specified target directory.
-            // use the <copy> task implementation to do up-to-date check.
-            Copy cp = new Copy();
-            cp.setTaskName(getTaskName());
-            cp.setProject(getProject());
-            cp.setTodir(todir);
-
             boolean hasSomethingToCopy=false;
             for (Node n : nodes) {
                 try {
                     File f = resolve(n);
                     if(f!=null) {
+                        // copy files to the specified target directory.
+                        // use the <copy> task implementation to do up-to-date check.
+                        Copy cp = new Copy();
+                        cp.setTaskName(getTaskName());
+                        cp.setProject(getProject());
+                        cp.setTodir(todir);
+                        if (stripVersion) {
+                            cp.add(new VersionStripper(n.version));
+                        }
                         FileSet fs = new FileSet();
                         fs.setFile(f);
                         cp.addFileset(fs);
+                        cp.execute();
                         hasSomethingToCopy=true;
                     }
                 } catch (AbstractArtifactResolutionException e) {
@@ -132,10 +147,8 @@ public class ResolveAllTask extends DependencyGraphTask {
                 }
             }
 
-            if(hasSomethingToCopy)
-                cp.execute();
-            else
-                cp.log("Nothing to copy",Project.MSG_INFO);
+            if(!hasSomethingToCopy)
+                log("Nothing to copy",Project.MSG_INFO);
         }
 
         log("Exiting ResolveAllTasks.execute ", Project.MSG_DEBUG);
@@ -152,5 +165,31 @@ public class ResolveAllTask extends DependencyGraphTask {
             remoteRepos = n.getProject().getRemoteArtifactRepositories();
         w.resolveArtifact(a,remoteRepos);
         return a.getFile();
+    }
+
+    private class VersionStripper implements FileNameMapper {
+        String version;
+        public VersionStripper(String v) {
+            version = v;
+        }
+
+        public void setFrom(String s) {
+        }
+
+        public void setTo(String s) {
+        }
+
+        public String[] mapFileName(String s) {
+            int idx = s.lastIndexOf(version);
+            String to = s;
+            if (idx != -1) {
+                // remove version in artifactId-version(-classifier).type
+                String baseFilename = s.substring( 0, idx - 1 );
+                String extension = s.substring( idx + version.length());
+                to = baseFilename + extension;
+            }
+            log("mapFileName: " + s + " -> " + to, Project.MSG_DEBUG);
+            return new String[]{to};
+        }
     }
 }
