@@ -343,17 +343,23 @@ public final class DependencyGraph {
         private /*final*/ File artifactFile;
         private Resolver artifactResolver = NULL;
 
+        /**
+         * Represents the artifact that we want to fetch.
+         */
+        private final Artifact artifact;
+
         private Node(Artifact artifact, DependencyGraph g, Queue<Node> q) throws ProjectBuildingException, ArtifactResolutionException, ArtifactNotFoundException {
             groupId = artifact.getGroupId();
             artifactId = artifact.getArtifactId();
             version = artifact.getVersion();
             type = artifact.getType();
             classifier = artifact.getClassifier();
+            this.artifact = artifact;
 
-            if("system".equals(artifact.getScope()))
+            if("system".equals(artifact.getScope())) {
                 // system scoped artifacts don't have POM, so the attempt to load it will fail.
                 pom = null;
-            else {
+            } else {
                 pom = g.bag.mavenProjectBuilder.buildFromRepository(
                         // this create another Artifact instance whose type is 'pom'
                         g.bag.factory.createProjectArtifact(artifact.getGroupId(),artifact.getArtifactId(), artifact.getVersion()),
@@ -391,11 +397,12 @@ public final class DependencyGraph {
             version = pom.getVersion();
             type = pom.getPackaging(); // are these the same thing?
             classifier = null;
+            artifact = pom.getArtifact();
             q.add(this); // visit dependencies from this POM later
         }
 
         private void expand(DependencyGraph g, Queue<Node> q) throws ArtifactResolutionException, ArtifactNotFoundException, ProjectBuildingException {
-            checkArtifact(pom.getArtifact(),g.bag);
+            checkArtifact(artifact,g.bag);
             loadDependencies(g,q);
         }
 
