@@ -34,6 +34,11 @@ import org.apache.tools.ant.taskdefs.Typedef;
 import java.beans.Introspector;
 import java.io.File;
 import java.util.List;
+import java.net.URLClassLoader;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.lang.reflect.Method;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * Maven AntRun Mojo.
@@ -265,4 +270,53 @@ public class AntRunMojo
         VisualizeFilter.class,
         GraphRefFilter.class
     };
+
+    /*
+        Mac JDKs don't have tools.jar (but they are just a part of rt.jar.
+        Because of this, users of this plugin cannot add tools.jar to the dependency of antrun
+        in a portable fashion --- doing so via plugin/dependencies/dependnecy as suggested in
+        http://jira.codehaus.org/browse/MANTRUN-23 would break Mac builds.
+
+        Typical error message is like this:
+            [INFO] [antrun-extended:run {execution: default}]
+            [INFO] Executing tasks
+                [javac] Compiling 1 source file to /home/kohsuke/ws/gfv3/antrun/src/it/test-javac/target
+            [INFO] ------------------------------------------------------------------------
+            [ERROR] BUILD ERROR
+            [INFO] ------------------------------------------------------------------------
+            [INFO] An Ant BuildException has occured: Unable to find a javac compiler;
+            com.sun.tools.javac.Main is not on the classpath.
+            Perhaps JAVA_HOME does not point to the JDK
+
+        So here we special-case tools.jar by locating them and adding them automatically to
+        the classloader that loaded us.
+     */
+    static {
+        try {
+            Class.forName("com.sun.tools.javac.Main");
+        } catch (ClassNotFoundException e) {
+            // if not found, try to locate them
+            File javaHome = new File(System.getProperty("java.home"));
+            File toolsJar = new File(javaHome,"../lib/tools.jar");
+            if(toolsJar.exists()) {
+                ClassLoader cl = AntRunMojo.class.getClassLoader();
+                if (cl instanceof URLClassLoader) {
+                    URLClassLoader ucl = (URLClassLoader) cl;
+                    try {
+                        Method m = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
+                        m.setAccessible(true);
+                        m.invoke(ucl,toolsJar.toURL());
+                    } catch (MalformedURLException e1) {
+                        // ignore the error and hope that the ant doesn't use javac 
+                    } catch (InvocationTargetException e1) {
+                        // ignore the error and hope that the ant doesn't use javac
+                    } catch (NoSuchMethodException e1) {
+                        // ignore the error and hope that the ant doesn't use javac
+                    } catch (IllegalAccessException e1) {
+                        // ignore the error and hope that the ant doesn't use javac
+                    }
+                }
+            }
+        }
+    }
 }
