@@ -105,6 +105,14 @@ public class AntRunMojo
     private File testSourceRoot;
 
     /**
+     * Requires that artifacts to be resolved be defined in the dependency section of the POM.
+     * Setting this to false allows you to resolve arbitrary artifact.
+     *
+     * @parameter expression="${verifyArtifact}" default-value="true"
+     */
+    private boolean verifyArtifact=true;
+
+    /**
      * Used for resolving artifacts
      *
      * @component
@@ -211,6 +219,7 @@ public class AntRunMojo
                 artifactHandlerManager, 
                 artifactMetadataSource,
                 mavenProjectBuilder);
+        bag.setVerifyArtifact(verifyArtifact);
     }
 
     protected void configureProject(Project antProject) {
