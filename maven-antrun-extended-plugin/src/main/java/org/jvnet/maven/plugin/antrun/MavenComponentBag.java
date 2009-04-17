@@ -191,29 +191,22 @@ final class MavenComponentBag {
         Artifact artifact;
         if (artifactId == null) {
             throw new IOException("Cannot resolve artifact: artifactId is null");
-        } else if (groupId == null || version == null) {
+        } else if (groupId == null || version == null || verifyArtifact) {
+            // we are missing some critical parameters, or verifyArtifact is true, in which case
+            // we only allow resolution in the project's dependencies
             artifact = resolveArtifactUsingMavenProjectArtifacts(artifactId, groupId, version, type, classifier);
-            // If no matches, throw exception
-            if (artifact == null) {
-                throw new IOException("Cannot resolve artifact. " +" groupId: "+ groupId 
-                        + " artifactId: " + artifactId + " version: " + version 
-                        + " type: "+ type + " classifier: "+ classifier);
-            }
         } else {
+            // otherwise we'll just create an artifact from what the user specified
             artifact = factory.createArtifactWithClassifier(groupId, artifactId, version, type, classifier);
-            if (verifyArtifact) {
-                // If 'true', check to see if artifact can be resolved by looking
-                // at artifacts configured in the MavenProject object via the pom.xml file
-                artifact = resolveArtifactUsingMavenProjectArtifacts(artifactId, groupId, version, type, classifier);
-                // If no matches, throw exception
-                if (artifact == null) {
-                    throw new IOException("Artifact not found in pom.xml. " +" groupId: "+ groupId 
-                        + " artifactId: " + artifactId + " version: " + version 
-                        + " type: "+ type + " classifier: "+ classifier);
-                }
-            }
         }
-        
+
+        // If no matches, throw exception
+        if (artifact == null) {
+            throw new IOException("Cannot resolve artifact. " +" groupId: "+ groupId
+                    + " artifactId: " + artifactId + " version: " + version
+                    + " type: "+ type + " classifier: "+ classifier);
+        }
+
         return artifact;
     }
     
