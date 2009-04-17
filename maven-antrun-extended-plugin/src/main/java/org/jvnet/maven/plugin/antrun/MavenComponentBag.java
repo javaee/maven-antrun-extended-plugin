@@ -191,7 +191,7 @@ final class MavenComponentBag {
         Artifact artifact;
         if (artifactId == null) {
             throw new IOException("Cannot resolve artifact: artifactId is null");
-        } else if (groupId == null || version == null || classifier == null) {
+        } else if (groupId == null || version == null) {
             artifact = resolveArtifactUsingMavenProjectArtifacts(artifactId, groupId, version, type, classifier);
             // If no matches, throw exception
             if (artifact == null) {
