@@ -55,12 +55,17 @@ public class RejarTask extends Jar {
 
     protected void zipFile(InputStream is, ZipOutputStream zOut, String vPath, long lastModified, File fromArchive, int mode) throws IOException {
         boolean isInhabitantsFile = vPath.startsWith("META-INF/inhabitants/");
+        boolean isServicesFile = vPath.startsWith("META-INF/services/");
 
-        if (isInhabitantsFile || vPath.startsWith("META-INF/services/"))  {
+        if (isInhabitantsFile || isServicesFile)  {
             // merging happens in the first pass.
             // in the second pass, ignore them.
             if(skipWriting) {
                 ByteArrayOutputStream stream = metadata.get(vPath);
+                if (isServicesFile) {
+                    if (stream != null)
+                        stream.write(("\n").getBytes());
+                }
                 if(stream==null)
                     metadata.put(vPath,stream= new ByteArrayOutputStream());
                 if(isInhabitantsFile) {
