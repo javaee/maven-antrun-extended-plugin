@@ -8,6 +8,7 @@ import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
+import org.apache.commons.collections.ListUtils;
 
 import java.io.File;
 import java.util.AbstractList;
@@ -378,8 +379,16 @@ public final class DependencyGraph {
                         artifactFile =artifact.getFile();
                         return artifactFile;
                     }
-                    if(pom!=null)
-                        bag.resolveArtifact(artifact, pom.getRemoteArtifactRepositories());
+                    if(pom!=null) {
+                        if (pom.getRemoteArtifactRepositories()==null) 
+                            bag.resolveArtifact(artifact);
+                        else {
+                            //use repositories from pom and also MavenComponentBag
+                            bag.resolveArtifact(artifact, 
+                                                ListUtils.sum(pom.getRemoteArtifactRepositories(),
+	                                                      bag.remoteRepositories));
+                        }
+		    }
                     else
                         bag.resolveArtifact(artifact);
                     artifactFile = artifact.getFile();
