@@ -54,7 +54,7 @@ public class RejarTask extends Jar {
     }
 
     protected void zipFile(InputStream is, ZipOutputStream zOut, String vPath, long lastModified, File fromArchive, int mode) throws IOException {
-        boolean isInhabitantsFile = vPath.startsWith("META-INF/inhabitants/");
+        boolean isInhabitantsFile = vPath.startsWith("META-INF/inhabitants/") || vPath.startsWith("META-INF/hk2-locator/");
         boolean isServicesFile = vPath.startsWith("META-INF/services/");
 
         if (isInhabitantsFile || isServicesFile)  {
