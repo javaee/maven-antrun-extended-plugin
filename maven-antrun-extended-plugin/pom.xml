@@ -1,12 +1,20 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">  
     <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>net.java</groupId>
+        <artifactId>jvnet-parent</artifactId>
+        <version>3</version>
+    </parent>
+
     <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
     <artifactId>maven-antrun-extended-plugin</artifactId>
     <packaging>maven-plugin</packaging>
+    <version>1.43-SNAPSHOT</version>
+
     <name>Maven AntRun Extended Plugin</name>
-    <version>1.44-SNAPSHOT</version>
     <description>This extended antrun maven plugin enables users not only to run ant scripts embedded in the POM, but also to reference maven dependencies using Ant task classes. This enables the user to delegate more complex tasks to Ant such as constructing file-based installation distros.</description>
+    <url>http://java.net/projects/maven-antrun-extended-plugin</url>
 
     <licenses>
         <license>
@@ -40,39 +48,11 @@
         </developer>
     </developers>
   
-    <distributionManagement>
-        <snapshotRepository>
-            <id>jvnet-nexus-snapshots</id>
-            <name>Java.net Nexus Snapshots Repository</name>
-            <url>${jvnetDistMgmtSnapshotsUrl}</url>
-        </snapshotRepository>
-        <repository>
-            <id>jvnet-nexus-staging</id>
-            <name>Java.net Nexus Staging Repository</name>
-            <url>https://maven.java.net/service/local/staging/deploy/maven2/</url>
-        </repository>
-    </distributionManagement>
-    
     <scm>
         <connection>scm:svn:https://svn.java.net/svn/maven-antrun-extended-plugin~svn/trunk/maven-antrun-extended-plugin</connection>
         <developerConnection>scm:svn:https://svn.java.net/svn/maven-antrun-extended-plugin~svn/trunk/maven-antrun-extended-plugin</developerConnection>
+        <url>http://java.net/projects/maven-antrun-extended-plugin/sources/svn/show</url>
     </scm>
-    
-    <repositories>
-        <repository>
-            <id>jvnet-nexus-snapshots</id>
-            <name>Java.net Nexus Snapshots Repository</name>
-            <url>https://maven.java.net/content/repositories/snapshots</url>
-            <releases>
-                <enabled>false</enabled>
-                <updatePolicy>never</updatePolicy>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-                <updatePolicy>never</updatePolicy>
-            </snapshots>
-        </repository>
-    </repositories>
     
     <properties>
         <!-- skipping tests until someone decides to fix this -->
@@ -89,6 +69,7 @@
             </plugin>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.4</version>
                 <configuration>
                     <source>1.5</source>
                     <target>1.5</target>
@@ -148,6 +129,26 @@
                         <configuration>
                         <!--argLine>-Xdebug -Xrunjdwp:transport=dt_socket,address=9009,server=y,suspend=y</argLine-->
                         </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>jvnet-release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>2.2</version>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>
