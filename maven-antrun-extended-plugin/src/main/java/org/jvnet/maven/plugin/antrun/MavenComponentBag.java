@@ -1,6 +1,5 @@
-package org.jvnet.maven.plugin.antrun;
-
 /*
+ *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,6 +17,8 @@ package org.jvnet.maven.plugin.antrun;
  * specific language governing permissions and limitations
  * under the License.
  */
+
+package org.jvnet.maven.plugin.antrun;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;

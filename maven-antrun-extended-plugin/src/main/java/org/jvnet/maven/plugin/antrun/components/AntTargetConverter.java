@@ -1,6 +1,5 @@
-package org.jvnet.maven.plugin.antrun.components;
-
 /*
+ * Copyright (c) 2004-2018 Oracle and/or its affiliates. All rights reserved.
  * Copyright 2004-2006 The Apache Software Foundation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,6 +14,8 @@ package org.jvnet.maven.plugin.antrun.components;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+package org.jvnet.maven.plugin.antrun.components;
 
 import org.apache.tools.ant.ComponentHelper;
 import org.apache.tools.ant.Project;
